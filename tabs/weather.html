@@ -1,0 +1,242 @@
+<!-- tabs/weather.html -->
+<section class="section" id="section-weather">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Atmospheric Intelligence</h1>
+            <p class="page-subtitle">Simulating environmental propagation dynamics and ionospheric modeling</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('weather')">
+            <span>❓</span> Help
+        </div>
+    </div>
+
+    <!-- Live Atmospheric Metrics -->
+    <div class="weather-stats-row">
+        <div class="card stat-card-compact">
+            <div class="stat-header">PRECIPITATION</div>
+            <div class="stat-value mono" id="sum-wx-precip">CLEAR</div>
+            <div class="stat-meta">Noise Floor Impact</div>
+        </div>
+        <div class="card stat-card-compact">
+            <div class="stat-header">HUMIDITY</div>
+            <div class="stat-value mono" id="sum-wx-humidity">0%</div>
+            <div class="stat-meta">Vapor Attenuation</div>
+        </div>
+        <div class="card stat-card-compact">
+            <div class="stat-header">INVERSION</div>
+            <div class="stat-value mono" id="sum-wx-inversion">INACTIVE</div>
+            <div class="stat-meta">Multipath Ducting</div>
+        </div>
+        <div class="card stat-card-compact">
+            <div class="stat-header">IONOSPHERE</div>
+            <div class="stat-value mono" id="sum-wx-iono">QUIET</div>
+            <div class="stat-meta">HF Reflection State</div>
+        </div>
+    </div>
+
+    <div class="weather-main-grid">
+        <!-- Left Column: Primary Dynamics -->
+        <div class="weather-col-primary">
+            
+            <!-- Precipitation Control -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                        Precipitation Dynamics
+                    </div>
+                    <div class="toggle" id="wx-toggle" onclick="setWeatherEnabled(!WX.weather_enabled)">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="routing-modes-grid">
+                        <div class="mode-mini-card" id="wxt-rain" onclick="setWeatherType('rain')">
+                            <div class="mode-mini-name">RAIN</div>
+                            <div class="mode-mini-desc">Wideband Static</div>
+                        </div>
+                        <div class="mode-mini-card" id="wxt-storm" onclick="setWeatherType('storm')">
+                            <div class="mode-mini-name">STORM</div>
+                            <div class="mode-mini-desc">Impulse Noise</div>
+                        </div>
+                        <div class="mode-mini-card" id="wxt-interference" onclick="setWeatherType('interference')">
+                            <div class="mode-mini-name">EMI</div>
+                            <div class="mode-mini-desc">Spectral Noise</div>
+                        </div>
+                        <div class="mode-mini-card" id="wxt-fog" onclick="setWeatherType('fog')">
+                            <div class="mode-mini-name">FOG</div>
+                            <div class="mode-mini-desc">Vapor Haze</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px">
+                        <div class="slider-header">
+                            <label class="form-label">Intensity Severity</label>
+                            <span class="mono slider-readout" id="sv-wx-severity">0.00</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-wx-severity" min="0" max="1" step="0.01" oninput="wxSliderUpdate('wx-severity')">
+                    </div>
+
+                    <div style="margin-top:16px">
+                        <div class="slider-header">
+                            <label class="form-label">Relative Humidity</label>
+                            <span class="mono slider-readout" id="sv-wx-humidity" style="color:var(--accent-blue)">0.00</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-wx-humidity" min="0" max="1" step="0.01" oninput="wxSliderUpdate('wx-humidity')">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inversion / Ducting -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Tropospheric Inversion
+                    </div>
+                    <div class="toggle" id="inv-toggle" onclick="setInversionEnabled(!WX.temp_inversion_enabled)">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="slider-header">
+                            <label class="form-label">Ducting Strength</label>
+                            <span class="mono slider-readout" id="sv-inv-strength">0.00</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-inv-strength" min="0" max="1" step="0.01" oninput="wxSliderUpdate('inv-strength')">
+                    </div>
+                    <div class="form-group" style="margin-top:16px">
+                        <div class="slider-header">
+                            <label class="form-label">Multipath Delay (ms)</label>
+                            <span class="mono slider-readout" id="sv-inv-echo" style="color:var(--accent-amber)">10.0 ms</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-inv-echo" min="5" max="20" step="0.5" oninput="wxSliderUpdate('inv-echo')">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Ionospheric Modeling -->
+        <div class="weather-col-visual">
+            
+            <!-- Ionosphere Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        Ionospheric State Engine
+                    </div>
+                    <div class="toggle" id="iono-toggle" onclick="setIonoEnabled(!WX.iono_enabled)">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="routing-modes-grid">
+                        <div class="mode-mini-card" id="iono-cond-quiet" onclick="setIonoCond('quiet')">
+                            <div class="mode-mini-name">QUIET</div>
+                            <div class="mode-mini-desc">Stable HF</div>
+                        </div>
+                        <div class="mode-mini-card" id="iono-cond-disturbed" onclick="setIonoCond('disturbed')">
+                            <div class="mode-mini-name">DISTURBED</div>
+                            <div class="mode-mini-desc">Flutter/Fade</div>
+                        </div>
+                        <div class="mode-mini-card" id="iono-cond-storm" onclick="setIonoCond('storm')">
+                            <div class="mode-mini-name">SOLAR STORM</div>
+                            <div class="mode-mini-desc">Heavy QRN</div>
+                        </div>
+                        <div class="mode-mini-card" id="iono-cond-blackout" onclick="setIonoCond('blackout')">
+                            <div class="mode-mini-name">BLACKOUT</div>
+                            <div class="mode-mini-desc">Total Absorption</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px">
+                        <div class="form-row">
+                            <div style="flex:1">
+                                <div class="slider-header">
+                                    <label class="form-label">Fading Depth</label>
+                                    <span class="mono slider-readout" id="sv-iono-fading">0.00</span>
+                                </div>
+                                <input type="range" class="range-slider" id="sl-iono-fading" min="0" max="1" step="0.01" oninput="wxSliderUpdate('iono-fading')">
+                            </div>
+                            <div style="flex:1">
+                                <div class="slider-header">
+                                    <label class="form-label">Flutter Rate</label>
+                                    <span class="mono slider-readout" id="sv-iono-flutter">0.00</span>
+                                </div>
+                                <input type="range" class="range-slider" id="sl-iono-flutter" min="0" max="1" step="0.01" oninput="wxSliderUpdate('iono-flutter')">
+                            </div>
+                        </div>
+
+                        <div style="margin-top:20px">
+                            <div class="slider-header">
+                                <label class="form-label">D-Layer Absorption</label>
+                                <span class="mono slider-readout" id="sv-iono-absorption" style="color:var(--accent-red)">0.00</span>
+                            </div>
+                            <input type="range" class="range-slider" id="sl-iono-absorption" min="0" max="1" step="0.01" oninput="wxSliderUpdate('iono-absorption')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apply Actions -->
+            <div class="card" style="background: rgba(255, 171, 64, 0.05); border-color: rgba(255, 171, 64, 0.2);">
+                <div class="card-body" style="display:flex; gap:12px; align-items:center">
+                    <div style="flex:1">
+                        <div style="font-size:11px; font-weight:800; color:var(--accent-amber)">ENVIRONMENTAL COMMIT</div>
+                        <div style="font-size:10px; color:var(--text-muted)">Apply atmospheric models to active simulation</div>
+                    </div>
+                    <button class="btn btn-sm" onclick="weatherLoad()">Reload</button>
+                    <button class="btn btn-sm amber" onclick="weatherSave()">Apply Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .weather-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .weather-main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 20px;
+        }
+
+        .routing-modes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .mode-mini-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-mini-card:hover { border-color: rgba(255,255,255,0.2); }
+        .mode-mini-card.active-cpx { border-color: var(--accent-blue); background: rgba(0, 184, 212, 0.1); }
+        .mode-mini-card.active-amber { border-color: var(--accent-amber); background: rgba(255, 171, 64, 0.1); }
+        
+        .mode-mini-name { font-size: 10px; font-weight: 800; color: var(--text-primary); }
+        .mode-mini-desc { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+        .slider-readout { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof weatherLoad === 'function') await weatherLoad();
+        })();
+    </script>
+</section>

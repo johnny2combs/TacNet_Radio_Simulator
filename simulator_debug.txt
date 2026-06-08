@@ -1,0 +1,12 @@
+'TerrainManager' object has no attribute 'get_elevation_offline'
+Traceback (most recent call last):
+  File "C:\Users\johnn\Desktop\mil_radiov3\radio_web.py", line 1934, in _post_planner_simulate
+    res = sim_infra.compute_path(
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\johnn\Desktop\mil_radiov3\radio_infra.py", line 425, in compute_path
+    ground_s = terrain.get_elevation_highres(slat, slon, fallback_online=self.online_fallback) or 0.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\johnn\Desktop\mil_radiov3\radio_terrain.py", line 510, in get_elevation_highres
+    off = self.get_elevation_offline(lat, lon)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TerrainManager' object has no attribute 'get_elevation_offline'. Did you mean: 'get_elevation_highres'?

@@ -1,0 +1,329 @@
+<!-- tabs/ew.html -->
+<section class="section" id="section-ew">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Electronic Warfare Command</h1>
+            <p class="page-subtitle">Spectrum dominance, signal degradation, and denial of service simulation</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('ew')">
+            <span>❓</span> Help
+        </div>
+    </div>
+
+    <!-- EW Status Analytics -->
+    <div class="ew-stats-row">
+        <div class="card stat-card-compact">
+            <div class="stat-header">ACTIVE JAMMERS</div>
+            <div class="stat-value mono" id="stat-ew-active">0</div>
+            <div class="stat-meta">Active Spectrum Effects</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">PACKET LOSS</div>
+            <div class="stat-value mono" id="stat-ew-loss" style="color:var(--accent-red)">0%</div>
+            <div class="stat-meta">Effective Denial Rate</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">NOISE FLOOR</div>
+            <div class="stat-value mono" id="stat-ew-noise">-110 dBm</div>
+            <div class="stat-meta">Spectrum Degradation</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">SILENCED</div>
+            <div class="stat-value mono" id="stat-ew-silenced">0</div>
+            <div class="stat-meta">EMCON Targets</div>
+        </div>
+    </div>
+
+    <div class="ew-main-grid">
+        <!-- Left: Command & Control -->
+        <div class="ew-col-primary">
+            
+            <!-- Active Effects Monitor -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        Spectrum Monitor
+                    </div>
+                    <div style="display:flex; gap:8px">
+                        <button class="btn btn-sm" onclick="ewRefresh()">Refresh</button>
+                        <button class="btn btn-sm danger" onclick="ewClearAll()">Clear All</button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:0">
+                    <div id="ew-active-list" class="ew-active-container">
+                        <div class="empty-state" style="padding:40px">No active spectral effects</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signal Degradation (EMI) -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Signal Degradation
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Target Channels</label>
+                        <div id="ew-emi-ch-picker" class="tactical-picker-grid"></div>
+                        <div class="form-help">Empty selection applies to all active nets</div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:20px">
+                        <div class="slider-header">
+                            <label class="form-label">Injection Intensity</label>
+                            <span class="mono slider-readout" id="sv-ew-noise" style="color:var(--accent-amber)">0.30</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-ew-noise" min="0" max="1" step="0.01" value="0.3" oninput="setSliderVal('sl-ew-noise','sv-ew-noise',this.value)">
+                    </div>
+
+                    <div class="form-group" style="margin-top:20px">
+                        <label class="form-label">Operational Label</label>
+                        <input type="text" class="form-input" id="ew-emi-label" placeholder="e.g. OPFOR EW SECTION 1">
+                    </div>
+
+                    <button class="btn btn-block amber" style="margin-top:16px" onclick="ewApplyEMI()">ENGAGE DEGRADATION</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Offensive Jamming Suite -->
+        <div class="ew-col-visual">
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Offensive Jamming Suite
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="tabs-tactical" style="margin-bottom:24px">
+                        <div class="tab-tactical active" data-ew-tab="area" onclick="ewTabSwitch('area')">
+                            <div class="tab-icon">🌐</div>
+                            <div class="tab-label">AREA JAM</div>
+                        </div>
+                        <div class="tab-tactical" data-ew-tab="targeted" onclick="ewTabSwitch('targeted')">
+                            <div class="tab-icon">🎯</div>
+                            <div class="tab-label">TARGETED</div>
+                        </div>
+                        <div class="tab-tactical" data-ew-tab="emcon" onclick="ewTabSwitch('emcon')">
+                            <div class="tab-icon">🤫</div>
+                            <div class="tab-label">EMCON</div>
+                        </div>
+                    </div>
+
+                    <!-- Area Jam -->
+                    <div id="ew-tab-area" class="ew-tab-pane">
+                        <div class="form-group">
+                            <label class="form-label">Denial Channels</label>
+                            <div id="ew-area-ch-picker" class="tactical-picker-grid"></div>
+                        </div>
+                        <div class="form-group" style="margin-top:20px">
+                            <div class="slider-header">
+                                <label class="form-label">Packet Denial Probability</label>
+                                <span class="mono slider-readout" id="sv-area-intensity" style="color:var(--accent-red)">1.00</span>
+                            </div>
+                            <input type="range" class="range-slider" id="sl-area-intensity" min="0" max="1" step="0.01" value="1.0" oninput="setSliderVal('sl-area-intensity','sv-area-intensity',this.value)">
+                        </div>
+                        <div class="form-group" style="margin-top:20px">
+                            <label class="form-label">Operational Label</label>
+                            <input type="text" class="form-input" id="ew-area-label" placeholder="e.g. SECTOR JAM">
+                        </div>
+                        <button class="btn btn-block danger" style="margin-top:20px" onclick="ewApplyAreaJam()">ENGAGE AREA JAM</button>
+                    </div>
+
+                    <!-- Targeted Jam -->
+                    <div id="ew-tab-targeted" class="ew-tab-pane" style="display:none">
+                        <div class="form-row" style="gap:20px">
+                            <div style="flex:1">
+                                <label class="form-label">Target Callsigns</label>
+                                <div id="ew-tgt-cs-picker" class="tactical-picker-grid cs-picker"></div>
+                            </div>
+                            <div style="flex:1">
+                                <label class="form-label">Target Channels</label>
+                                <div id="ew-tgt-ch-picker" class="tactical-picker-grid"></div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:20px">
+                            <div class="slider-header">
+                                <label class="form-label">Jam Intensity</label>
+                                <span class="mono slider-readout" id="sv-tgt-intensity" style="color:var(--accent-red)">0.70</span>
+                            </div>
+                            <input type="range" class="range-slider" id="sl-tgt-intensity" min="0" max="1" step="0.01" value="0.7" oninput="setSliderVal('sl-tgt-intensity','sv-tgt-intensity',this.value)">
+                        </div>
+                        <div class="form-group" style="margin-top:20px">
+                            <label class="form-label">Operational Label</label>
+                            <input type="text" class="form-input" id="ew-tgt-label" placeholder="e.g. TARGETED DEGRADATION">
+                        </div>
+                        <button class="btn btn-block danger" style="margin-top:20px" onclick="ewApplyTargetedJam()">ENGAGE TARGETED JAM</button>
+                    </div>
+
+                    <!-- EMCON -->
+                    <div id="ew-tab-emcon" class="ew-tab-pane" style="display:none">
+                        <div class="alert-tactical danger" style="margin-bottom:20px">
+                            <strong>ENFORCING EMCON:</strong> Targeted units will be completely suppressed from transmitting.
+                        </div>
+                        <div class="form-row" style="gap:20px">
+                            <div style="flex:1">
+                                <label class="form-label">Silence Callsigns</label>
+                                <div id="ew-emcon-cs-picker" class="tactical-picker-grid cs-picker"></div>
+                            </div>
+                            <div style="flex:1">
+                                <label class="form-label">On Channels</label>
+                                <div id="ew-emcon-ch-picker" class="tactical-picker-grid"></div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:20px">
+                            <label class="form-label">EMCON Designation</label>
+                            <input type="text" class="form-input" id="ew-emcon-label" placeholder="e.g. EMCON DELTA">
+                        </div>
+                        <button class="btn btn-block danger" style="margin-top:20px" onclick="ewApplyEmcon()">ENFORCE EMCON</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EW Event Log -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Spectral Activity Log</div>
+                    <div class="mono" style="font-size:10px; color:var(--text-muted)">LIVE FEED</div>
+                </div>
+                <div class="card-body" style="padding:0">
+                    <div id="ew-log" class="tactical-log-small"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        .ew-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .ew-main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 20px;
+        }
+
+        .ew-active-container {
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .ew-effect-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .ew-effect-item:last-child { border-bottom: none; }
+        .ew-effect-item:hover { background: rgba(255,255,255,0.05); }
+
+        .ew-effect-info { flex: 1; }
+        .ew-effect-name { font-size: 11px; font-weight: 800; color: var(--text-primary); }
+        .ew-effect-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        .tactical-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .cs-picker {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+
+        .ch-pick-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .ch-pick-btn:hover { border-color: rgba(255,255,255,0.2); }
+        .ch-pick-btn.sel { background: rgba(0, 184, 212, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); font-weight: 700; }
+        
+        .tabs-tactical {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-tactical {
+            flex: 1;
+            padding: 10px 4px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.6;
+        }
+
+        .tab-tactical:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+        .tab-tactical.active { opacity: 1; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 1px solid var(--border-color); }
+        
+        .tab-icon { font-size: 14px; }
+        .tab-label { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; }
+
+        .tactical-log-small {
+            height: 180px;
+            background: rgba(0,0,0,0.3);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 12px;
+            overflow-y: auto;
+            color: var(--text-secondary);
+        }
+
+        .alert-tactical {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            border: 1px solid transparent;
+        }
+
+        .alert-tactical.danger {
+            background: rgba(255, 82, 82, 0.1);
+            border-color: rgba(255, 82, 82, 0.3);
+            color: var(--accent-red);
+        }
+
+        .slider-readout { font-size: 11px; font-weight: 700; }
+        .btn-block { width: 100%; padding: 12px; font-weight: 800; letter-spacing: 0.05em; }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof ewBuildPickers === 'function') await ewBuildPickers();
+            if (typeof ewRefresh === 'function') await ewRefresh();
+        })();
+    </script>
+</section>

@@ -1,0 +1,616 @@
+<!-- tabs/audio.html -->
+<section class="section" id="section-audio">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Signal Processing Engine</h1>
+            <p class="page-subtitle">Configure real-time DSP, distortion models, and acoustic environments</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('audio')">
+            <span>❓</span> Help
+        </div>
+    </div>
+
+    <div class="card-actions" style="margin-bottom:24px">
+        <button class="btn btn-sm" onclick="loadAudioConfig()">Reload Logic</button>
+        <button class="btn btn-sm amber" onclick="saveAudioConfig()">Commit to DSP</button>
+    </div>
+
+    <!-- Mode Presets -->
+    <div class="audio-modes-grid">
+        <div class="mode-card" id="mode-cpx" onclick="applyPreset('cpx')">
+            <div class="mode-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+            </div>
+            <div class="mode-info">
+                <div class="mode-tag">FIDELITY: ULTRA</div>
+                <div class="mode-name">CPX Mode — Clear Channel</div>
+                <div class="mode-desc">Bypasses all environmental distortion. Uses 48kHz wideband Opus for crystal clear
+                    operational comms.</div>
+            </div>
+            <div class="mode-status">ACTIVE</div>
+        </div>
+        <div class="mode-card" id="mode-sim" onclick="applyPreset('sim')">
+            <div class="mode-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                    <polyline points="17 2 12 7 7 2" />
+                </svg>
+            </div>
+            <div class="mode-info">
+                <div class="mode-tag">FIDELITY: SIMULATED</div>
+                <div class="mode-name">Tactical Radio Mode</div>
+                <div class="mode-desc">Enables harmonic distortion, narrowband filters, and ambient noise floors for
+                    realistic radio simulation.</div>
+            </div>
+            <div class="mode-status">ACTIVE</div>
+        </div>
+    </div>
+
+    <!-- Signal Flow Diagram -->
+    <div class="dsp-flow-container">
+        <div class="dsp-flow-label">DSP SIGNAL CHAIN PIPELINE</div>
+        <div class="dsp-chain">
+            <div class="dsp-node active" id="fxn-gain">INPUT</div>
+            <div class="dsp-connector active"></div>
+            <div class="dsp-node" id="fxn-bandpass">BANDPASS</div>
+            <div class="dsp-connector"></div>
+            <div class="dsp-node" id="fxn-distortion">DISTORTION</div>
+            <div class="dsp-connector"></div>
+            <div class="dsp-node" id="fxn-noise">NOISE FLOOR</div>
+            <div class="dsp-connector"></div>
+            <div class="dsp-node" id="fxn-clicks">PTT RELAY</div>
+            <div class="dsp-connector"></div>
+            <div class="dsp-node active" id="fxn-squelch">OUTPUT</div>
+        </div>
+    </div>
+
+    <div class="audio-controls-grid">
+        <!-- Core Audio Specs -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 20h20M2 14h20M2 8h20M2 2h20" />
+                    </svg>
+                    Core DSP Pipeline
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Sample Rate (Clock Speed)</label>
+                    <select class="form-select mono" id="dsp-rate"
+                        onchange="AX.sample_rate = parseInt(this.value); renderAudioPanel()">
+                        <option value="8000">8,000 Hz (Legacy Telephony)</option>
+                        <option value="16000">16,000 Hz (Tactical Wideband)</option>
+                        <option value="24000">24,000 Hz (High Fidelity)</option>
+                        <option value="48000">48,000 Hz (Full Spectrum)</option>
+                    </select>
+                </div>
+                <div class="form-row" style="margin-top:16px">
+                    <div>
+                        <label class="form-label">Buffer (ms)</label>
+                        <select class="form-select mono" id="dsp-buffer"
+                            onchange="AX.buffer_ms = parseInt(this.value); renderAudioPanel()">
+                            <option value="20">20ms</option>
+                            <option value="40">40ms</option>
+                            <option value="60">60ms</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Queue Depth</label>
+                        <input type="number" class="form-input mono" id="dsp-queue" value="10"
+                            oninput="AX.queue_size = parseInt(this.value); renderAudioPanel()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distortion -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                    Acoustic Profile
+                </div>
+                <div class="toggle" id="fx-dist-en" onclick="toggleFx('dist')">
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-desc">Simulates the analog grit and saturation of a real radio transmitter.</p>
+                <div class="form-group">
+                    <div class="slider-header">
+                        <label class="form-label">Harmonic Distortion</label>
+                        <span class="mono slider-readout" id="sv-dist-gain">5.0</span>
+                    </div>
+                    <input type="range" class="range-slider" id="sl-dist-gain" min="1" max="20" step="0.5" value="5"
+                        oninput="setSliderVal('sl-dist-gain','sv-dist-gain',this.value)">
+                    <p class="label-secondary">Higher values add more 'crunch' and harmonics to the voice.</p>
+                </div>
+                <div class="form-group" style="margin-top:16px">
+                    <div class="slider-header">
+                        <label class="form-label">Low-Pass Ceiling (Hz)</label>
+                        <span class="mono slider-readout" id="sv-lp-freq">3200</span>
+                    </div>
+                    <input type="range" class="range-slider" id="sl-lp-freq" min="1000" max="8000" step="100"
+                        value="3200" oninput="setSliderVal('sl-lp-freq','sv-lp-freq',this.value)">
+                    <p class="label-secondary">Cuts out high-pitched hiss. Lower values sound like older radios.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Static -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                    Signal Environment
+                </div>
+                <div class="toggle" id="fx-noise-en" onclick="toggleFx('noise')">
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-desc">Adds realistic environmental static and atmospheric noise to the signal.</p>
+                <div class="form-group">
+                    <div class="slider-header">
+                        <label class="form-label">White Noise Floor</label>
+                        <span class="mono slider-readout" id="sv-noise-lvl">0.05</span>
+                    </div>
+                    <input type="range" class="range-slider" id="sl-noise-lvl" min="0" max="0.5" step="0.01"
+                        value="0.05" oninput="setSliderVal('sl-noise-lvl','sv-noise-lvl',this.value)">
+                    <p class="label-secondary">Consistent background hiss. Simulates distance and signal degradation.
+                    </p>
+                </div>
+                <div class="form-group" style="margin-top:16px">
+                    <div class="slider-header">
+                        <label class="form-label">Atmospheric Crackle</label>
+                        <span class="mono slider-readout" id="sv-crackle-lvl">0.10</span>
+                    </div>
+                    <input type="range" class="range-slider" id="sl-crackle-lvl" min="0" max="1" step="0.01" value="0.1"
+                        oninput="setSliderVal('sl-crackle-lvl','sv-crackle-lvl',this.value)">
+                    <p class="label-secondary">Occasional pops and crackles caused by weather or interference.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mechanical -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 6V2m0 20v-4m-6-6H2m20 0h-4m-1.5-5.5l-3 3m0 5l3 3m-10-11l-3 3m0 5l3 3" />
+                    </svg>
+                    Relay & Mechanical
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">PTT Relay Signature</label>
+                    <select class="form-select mono" id="fx-ptt-type">
+                        <option value="none">None (Digital Silent)</option>
+                        <option value="standard">Standard Military Relay</option>
+                        <option value="heavy">Heavy Mechanical Switch</option>
+                        <option value="digital">Digital Squelch Burst</option>
+                        <option value="tactical">Tactical Tone ID</option>
+                    </select>
+                </div>
+                <div class="relay-toggle-box" style="margin-top:20px" id="box-squelch-tail"
+                    onclick="window.toggleFx('squelch')">
+                    <div class="toggle" id="fx-squelch-tail">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <div class="relay-label">
+                        <div class="label-primary">Squelch Tail Emulation</div>
+                        <div class="label-secondary">Adds a short burst of noise after a transmission ends,
+                            characteristic of analog radio systems.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <style>
+        .audio-modes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .mode-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            gap: 20px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .mode-card.active-cpx {
+            border-color: var(--accent-blue);
+            background: rgba(0, 184, 212, 0.05);
+            box-shadow: 0 0 20px rgba(0, 184, 212, 0.1);
+        }
+
+        .mode-card.active-sim {
+            border-color: var(--accent-amber);
+            background: rgba(255, 171, 64, 0.05);
+            box-shadow: 0 0 20px rgba(255, 171, 64, 0.1);
+        }
+
+        .mode-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .mode-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .mode-icon.blue {
+            color: var(--accent-blue);
+            background: rgba(0, 184, 212, 0.1);
+        }
+
+        .mode-icon.amber {
+            color: var(--accent-amber);
+            background: rgba(255, 171, 64, 0.1);
+        }
+
+        .mode-info {
+            flex: 1;
+        }
+
+        .mode-tag {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .mode-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .mode-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .mode-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .active-cpx .mode-status,
+        .active-sim .mode-status {
+            opacity: 1;
+            background: var(--accent-blue);
+            color: #000;
+        }
+
+        .active-sim .mode-status {
+            background: var(--accent-amber);
+        }
+
+        /* DSP Flow */
+        .dsp-flow-container {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .dsp-flow-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .dsp-chain {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .dsp-node {
+            padding: 10px 16px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .dsp-node.active {
+            background: rgba(0, 230, 118, 0.1);
+            border-color: var(--gn);
+            color: var(--gn);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
+        }
+
+        .dsp-node.amber.active {
+            background: rgba(255, 171, 64, 0.1);
+            border-color: var(--accent-amber);
+            color: var(--accent-amber);
+            box-shadow: 0 0 15px rgba(255, 171, 64, 0.15);
+        }
+
+        .dsp-node.cyan.active {
+            background: rgba(0, 184, 212, 0.1);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .dsp-connector {
+            flex: 1;
+            height: 2px;
+            background: var(--border-color);
+            position: relative;
+        }
+
+        .dsp-connector.active {
+            background: var(--gn);
+            box-shadow: 0 0 8px var(--gn);
+        }
+
+        .audio-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.4;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-readout {
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .relay-toggle-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .relay-toggle-box:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .relay-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .label-primary {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .label-secondary {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Toggles */
+        .toggle {
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle.on {
+            background: var(--gn);
+            border-color: var(--gn);
+        }
+
+        .toggle-knob {
+            width: 14px;
+            height: 14px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle.on .toggle-knob {
+            left: 22px;
+            background: #000;
+        }
+
+        .toggle:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+
+    <script>
+        (function () {
+            // Use the global AX state if available, otherwise initialize
+            if (!window.AX) {
+                window.AX = {
+                    sample_rate: 48000, distortion: 0.0, noise_floor: 0.0, crackle_lvl: 0.0,
+                    ptt_click_enabled: true, ptt_type: 'standard', squelch_tail_enabled: false,
+                    filter_type: 'butter', filter_order: 4,
+                    bp_low_hz: 120, bp_high_hz: 7000
+                };
+            }
+
+            // Injected tabs should use the parent's functions if possible.
+            // If they aren't defined (standalone mode), we'd need them here, but we are in an SPA.
+
+            window.renderAudioFxPanel = function () {
+                const AX = window.AX;
+                if (!AX) return;
+
+                // Presets active state
+                const isRange = !!AX.range_enabled;
+                const isCpx = !isRange;
+                console.log("Rendering Audio FX Panel. Range Enabled:", isRange, "isCpx:", isCpx);
+                const mCPX = document.getElementById('mode-cpx');
+                const mSim = document.getElementById('mode-sim');
+                if (mCPX) mCPX.classList.toggle('active-cpx', isCpx);
+                if (mSim) mSim.classList.toggle('active-sim', !isCpx);
+
+                // Toggles
+                const tDist = document.getElementById('fx-dist-en');
+                const tNoise = document.getElementById('fx-noise-en');
+                const tSquelch = document.getElementById('fx-squelch-tail');
+                const tAGC = document.getElementById('fx-agc-en');
+
+                if (tDist) tDist.classList.toggle('on', AX.distortion > 0);
+                if (tNoise) tNoise.classList.toggle('on', AX.noise_floor > 0);
+                if (tSquelch) tSquelch.classList.toggle('on', AX.squelch_tail_enabled || AX.squelch_tail);
+
+                // Sliders & Values
+                const elRate = document.getElementById('dsp-rate');
+                if (elRate) elRate.value = AX.sample_rate;
+
+                const slDist = document.getElementById('sl-dist-gain');
+                const svDist = document.getElementById('sv-dist-gain');
+                if (slDist) slDist.value = AX.distortion * 20;
+                if (svDist) svDist.innerText = (AX.distortion * 20).toFixed(1);
+
+                const slLP = document.getElementById('sl-lp-freq');
+                const svLP = document.getElementById('sv-lp-freq');
+                if (slLP) slLP.value = AX.bp_high_hz || AX.bp_high;
+                if (svLP) svLP.innerText = AX.bp_high_hz || AX.bp_high;
+
+                const slNoise = document.getElementById('sl-noise-lvl');
+                const svNoise = document.getElementById('sv-noise-lvl');
+                if (slNoise) slNoise.value = AX.noise_floor;
+                if (svNoise) svNoise.innerText = AX.noise_floor.toFixed(3);
+
+                const slCrackle = document.getElementById('sl-crackle-lvl');
+                const svCrackle = document.getElementById('sv-crackle-lvl');
+                if (slCrackle) slCrackle.value = AX.crackle_lvl;
+                if (svCrackle) svCrackle.innerText = AX.crackle_lvl.toFixed(2);
+
+                const elPTT = document.getElementById('fx-ptt-type');
+                if (elPTT) elPTT.value = AX.ptt_type || 'none';
+
+                // Flow Nodes
+                const fnDist = document.getElementById('fxn-distortion');
+                const fnNoise = document.getElementById('fxn-noise');
+
+                if (fnDist) fnDist.classList.toggle('active', AX.distortion > 0);
+                if (fnNoise) fnNoise.classList.toggle('active', AX.noise_floor > 0);
+            };
+
+            window.setSliderVal = function (id, readoutId, val) {
+                const AX = window.AX;
+                const readout = document.getElementById(readoutId);
+                if (readout) readout.innerText = val;
+
+                if (id === 'sl-dist-gain') AX.distortion = parseFloat(val) / 20;
+                if (id === 'sl-lp-freq') { AX.bp_high_hz = parseInt(val); AX.bp_high = parseInt(val); }
+                if (id === 'sl-noise-lvl') AX.noise_floor = parseFloat(val);
+                if (id === 'sl-crackle-lvl') AX.crackle_lvl = parseFloat(val);
+                window.renderAudioPanel();
+            };
+
+            window.toggleFx = function (type) {
+                const AX = window.AX;
+                if (type === 'dist') AX.distortion = (AX.distortion > 0 ? 0 : 0.5);
+                if (type === 'noise') AX.noise_floor = (AX.noise_floor > 0 ? 0 : 0.05);
+                if (type === 'squelch') { AX.squelch_tail_enabled = !AX.squelch_tail_enabled; AX.squelch_tail = AX.squelch_tail_enabled; }
+                window.renderAudioPanel();
+            };
+
+            // Initial load
+            if (typeof loadAudioConfig === 'function') loadAudioConfig();
+            else renderAudioPanel();
+
+            const elFiltT = document.getElementById('fx-filter-type');
+            if (elFiltT) {
+                elFiltT.onchange = (e) => {
+                    window.AX.filter_type = e.target.value;
+                    window.renderAudioPanel();
+                };
+            }
+        })();
+    </script>
+</section>

@@ -1,0 +1,205 @@
+<!-- tabs/aar.html -->
+<section class="section" id="section-aar">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">After-Action Review (AAR)</h1>
+            <p class="page-subtitle">Mission reconstruction, spectral forensics, and signal logging</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('aar')">
+            <span>❓</span> Help
+        </div>
+    </div>
+
+    <!-- AAR Summary Telemetry -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">RECORDING STATUS</div>
+            <div class="stat-value" id="aar-status-text">STANDBY</div>
+            <div class="stat-trend" id="aar-live-indicator" style="display:none; color:var(--accent-red)">
+                <span class="pulse-live"></span> RECORDING LIVE
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">SESSION ELAPSED</div>
+            <div class="stat-value mono" id="aar-hhour-display">00:00:00</div>
+            <div class="stat-trend">REL. TO H-HOUR</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">SPECTRAL ENTRIES</div>
+            <div class="stat-value mono" id="aar-tx-count">0</div>
+            <div class="stat-trend">TOTAL LOGGED</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">MISSION ID</div>
+            <div class="stat-value mono" id="aar-session-id" style="font-size: 1.1rem;">---</div>
+            <div class="stat-trend">ACTIVE UID</div>
+        </div>
+    </div>
+
+    <div class="aar-main-grid">
+        <!-- Session Control -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Recording Controls
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Exercise Designation</label>
+                    <input type="text" class="form-input" id="aar-exercise" placeholder="e.g. OPERATION NEPTUNE">
+                </div>
+                
+                <div class="form-group" style="margin-top:20px">
+                    <label class="form-label">Chronology Source</label>
+                    <div class="flex-row" style="gap:8px">
+                        <button class="btn btn-sm on" id="aar-mode-wall" onclick="aarSetMode('wall')" style="flex:1">WALL CLOCK</button>
+                        <button class="btn btn-sm" id="aar-mode-manual" onclick="aarSetMode('manual')" style="flex:1">MANUAL</button>
+                        <button class="btn btn-sm" id="aar-mode-sword" onclick="aarSetMode('sword')" style="flex:1">SIM-BRIDGE</button>
+                    </div>
+                </div>
+
+                <div id="aar-hhour-col" class="form-group" style="display:none; margin-top:20px">
+                    <label class="form-label">Manual H-Hour Offset</label>
+                    <div class="flex-row" style="gap:8px">
+                        <input type="text" class="form-input mono" id="aar-hhour-input" placeholder="00:00:00" oninput="aarValidateHHour()" style="flex:1">
+                        <button class="btn btn-sm" onclick="aarSetHHourNow()">MARK NOW</button>
+                    </div>
+                </div>
+
+                <div id="aar-sword-row" class="form-group" style="display:none; margin-top:20px">
+                    <label class="form-label">SimBridge Endpoint</label>
+                    <input type="text" class="form-input mono" id="aar-sword-url" placeholder="http://127.0.0.1:8080">
+                    <div id="aar-sword-indicator" style="display:none; font-size:0.65rem; margin-top:4px; font-weight:700">
+                        STATUS: <span id="aar-sword-ok">OFFLINE</span>
+                        <div id="aar-sword-status" style="margin-top:2px; font-weight:400; color:var(--text-muted)"></div>
+                    </div>
+                </div>
+
+                <div class="btn-group-vertical" style="margin-top:24px; display:flex; flex-direction:column; gap:8px">
+                    <button class="btn ok" id="aar-start-btn" onclick="aarStart()" style="width:100%; padding:14px; font-weight:800">START MISSION RECORDING</button>
+                    <button class="btn danger" id="aar-stop-btn" onclick="aarStop()" style="display:none; width:100%; padding:14px; font-weight:800">CEASE RECORDING</button>
+                    <div class="flex-row" style="gap:8px">
+                        <button class="btn" style="flex:1" onclick="aarConnectSword()">SYNC SIM</button>
+                        <button class="btn amber" id="aar-zip-btn" style="flex:1" onclick="aarArchiveActive()">ARCHIVE ZIP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Feed -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Live Transmission Forensics
+                </div>
+                <div id="aar-live-badge" class="badge" style="display:none; background:var(--rd); color:white; font-size:0.65rem; padding:2px 8px">LIVE FEED</div>
+            </div>
+            <div class="card-body" style="padding:0">
+                <!-- Active TX Overlay (shown only when someone is transmitting) -->
+                <div id="aar-active-section" style="display:none; background:rgba(255, 82, 82, 0.05); border-bottom:1px solid var(--border-color); padding:12px 16px">
+                    <div style="font-size:0.65rem; font-weight:800; color:var(--accent-red); text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:6px">
+                        <span class="pulse-live"></span> ACTIVE TRANSMISSIONS
+                    </div>
+                    <div id="aar-active-list" class="flex-row" style="gap:8px; flex-wrap:wrap"></div>
+                </div>
+
+                <div class="table-container" style="max-height: 500px;">
+                    <table class="table-tactical">
+                        <thead>
+                            <tr>
+                                <th style="width:100px">TIMESTAMP</th>
+                                <th>ASSET</th>
+                                <th>NET</th>
+                                <th>DURATION</th>
+                                <th>SIGNAL</th>
+                                <th style="width:140px; text-align:right">AUDIO FORENSICS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aar-tx-tbody">
+                            <tr>
+                                <td colspan="6" class="empty-state" style="padding:100px 0">Awaiting spectral activity...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Sessions -->
+    <div class="card" style="margin-top:24px">
+        <div class="card-header">
+            <div class="card-title">Historical Mission Archives</div>
+            <button class="btn btn-sm" onclick="aarRefreshSessions()">REFRESH REGISTRY</button>
+        </div>
+        <div class="card-body" style="padding:0">
+            <div class="table-container">
+                <table class="table-tactical">
+                    <thead>
+                        <tr>
+                            <th>MISSION UID</th>
+                            <th>DESIGNATION</th>
+                            <th>TIMESTAMP</th>
+                            <th>H-HOUR</th>
+                            <th>VOLUME</th>
+                            <th style="text-align:right">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="aar-sessions-tbody">
+                        <tr>
+                            <td colspan="6" class="empty-state">No archived missions found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .aar-main-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+        
+        .table-tactical {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+        .table-tactical th {
+            text-align: left;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.65rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table-tactical td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+        }
+        .table-tactical tr:hover td {
+            background: rgba(255,255,255,0.02);
+            color: var(--text-primary);
+        }
+        .table-tactical .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof aarRefresh === 'function') aarRefresh();
+            if (typeof aarRefreshSessions === 'function') aarRefreshSessions();
+        })();
+    </script>
+</section>

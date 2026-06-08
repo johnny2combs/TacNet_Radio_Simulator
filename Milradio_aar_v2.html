@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilRadio AAR — After Action Review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --border-color: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --success-bg: rgba(34, 197, 94, 0.1);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --error-bg: rgba(239, 68, 68, 0.1);
+            --gn: #22c55e;
+            --rd: #ef4444;
+            --am: #f59e0b;
+            --ph: #8b5cf6;
+            --tx: #f1f5f9;
+            --txd: #94a3b8;
+            --txm: #64748b;
+            --phh: #a78bfa;
+            --phd: #7c3aed;
+            --rdd: rgba(239, 68, 68, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge.ok { background: var(--success-bg); color: var(--gn); }
+        .badge.warn { background: var(--warning-bg); color: var(--am); }
+        .badge.tx { background: var(--error-bg); color: var(--rd); }
+        .badge.blink { animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body { padding: 24px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn:hover { background: var(--border-color); }
+        .btn.danger { background: var(--rd); border-color: var(--rd); color: #fff; }
+        .btn.danger:hover { background: #dc2626; }
+        .btn.amber { background: var(--am); border-color: var(--am); color: #000; }
+        .btn.amber:hover { background: #d97706; }
+        .btn svg { width: 16px; height: 16px; }
+
+        .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        th:hover { color: var(--text-primary); }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        tr:hover td { background: var(--bg-tertiary); }
+        tr.playing td { background: rgba(59, 130, 246, 0.15); }
+        .table-container { overflow-x: auto; }
+
+        .ch-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cs-lbl { font-weight: 600; color: var(--accent-blue); }
+
+        .timeline-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            min-height: 150px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .form-input, .form-select {
+            padding: 8px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px;
+        }
+
+        .section-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 24px 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Timeline Styles */
+        .tl-axis {
+            position: relative;
+            height: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 8px;
+        }
+        .tl-tick {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            background: var(--border-color);
+        }
+        .tl-tick.major { height: 14px; background: var(--text-muted); }
+        .tl-tick-label {
+            position: absolute;
+            bottom: -18px;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .tl-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .tl-ch-label {
+            width: 140px;
+            font-size: 11px;
+            font-weight: 600;
+            padding-right: 12px;
+        }
+        .tl-track {
+            position: relative;
+            height: 24px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            flex: 1;
+        }
+        .tl-block {
+            position: absolute;
+            height: 16px;
+            top: 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 600;
+            color: #000;
+            text-shadow: 0 0 2px rgba(255,255,255,0.8);
+        }
+        .tl-block.playing {
+            box-shadow: 0 0 0 2px var(--accent-blue), 0 0 8px var(--accent-blue);
+        }
+        .tl-block-lbl {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 4px;
+        }
+
+        /* Filter Buttons */
+        .filter-btn {
+            padding: 4px 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        /* Table Styles */
+        .dur-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dur-bar {
+            height: 5px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .dur-bar > div {
+            height: 100%;
+            border-radius: 2px;
+        }
+        .dur-val {
+            font-size: 10px;
+            color: var(--text-muted);
+            min-width: 40px;
+        }
+
+        .play-btn {
+            width: 28px;
+            height: 28px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .play-btn:hover, .play-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        /* Participants Grid */
+        .p-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .p-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .p-callsign {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 4px;
+        }
+        .p-name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .p-stats {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .p-bar {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .p-bar-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        /* Audio Player */
+        #ap {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 400px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        #ap.visible { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .ap-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .ap-cs {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+        .ap-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .ap-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .ap-progress-bg {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .ap-progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .ap-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            min-width: 90px;
+            text-align: right;
+        }
+        .ap-controls {
+            display: flex;
+            gap: 8px;
+        }
+        .ap-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.8125rem;
+        }
+        .ap-btn:hover { background: var(--border-color); }
+
+        /* Tooltip */
+        #tt {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.8125rem;
+            z-index: 1100;
+            display: none;
+            pointer-events: none;
+            max-width: 280px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        #tt.visible { display: block; }
+
+        /* Channel Legend */
+        .ch-legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+        .ch-leg-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 0.2s;
+        }
+        .ch-leg-item.muted { opacity: 0.3; }
+        .ch-leg-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .card { break-inside: avoid; border: 1px solid #ddd; }
+            .btn, .card-actions, .filter-bar, .zoom-controls, #ap { display: none !important; }
+            .tl-block { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            #ap { width: calc(100% - 32px); left: 16px; right: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="header-title">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                </svg>
+                MilRadio AAR — <span id="exercise-name">EX TAMA TAUA 26</span>
+            </h1>
+            <p class="header-subtitle">
+                UNCLASSIFIED // EXERCISE ONLY AFTER ACTION REVIEW — COMMUNICATIONS LOG
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                    </svg>
+                    Session Summary
+                </div>
+                <div class="card-actions">
+                    <button class="btn amber" onclick="exportCSV()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        ⇓ CSV
+                    </button>
+                    <button class="btn" onclick="exportJSON()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        ⇓ JSON
+                    </button>
+                    <button class="btn" onclick="window.print()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"/>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <rect x="6" y="14" width="12" height="8"/>
+                        </svg>
+                        ⎙ PRINT / PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Recording</div>
+                        <div class="stat-value mono"><span id="live-badge" class="badge tx" style="display:none">● LIVE</span><span id="stat-recording">COMPLETED</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Transmissions</div>
+                        <div class="stat-value mono" id="stat-tx">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Callsigns Active</div>
+                        <div class="stat-value mono" id="stat-callsigns">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Channels Used</div>
+                        <div class="stat-value mono" id="stat-channels">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Session Duration</div>
+                        <div class="stat-value mono" id="stat-duration">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Air Time</div>
+                        <div class="stat-value mono" id="stat-airtime">—</div>
+                    </div>
+                </div>
+
+                <div class="section-label">Session Information</div>
+                <div id="cover-meta" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="section-label">H-Hour Reference</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                    <div>
+                        <div class="stat-label">Time Source</div>
+                        <div class="mono" id="hhour-source-label">Wall Clock (PC)</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">H-Hour Value</div>
+                        <div class="mono" id="hhour-value-label">—</div>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <div class="stat-label">Status</div>
+                        <div id="hhour-status" style="color: var(--txm); font-size: 0.875rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    Transmission Timeline
+                </div>
+                <div class="zoom-controls">
+                    <button class="btn btn-sm" onclick="zoom(-1)">− Zoom Out</button>
+                    <button class="btn btn-sm" onclick="zoom(0)">⟲ Reset</button>
+                    <button class="btn btn-sm" onclick="zoom(1)">+ Zoom In</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="ch-legend" id="ch-legend"></div>
+                <div class="timeline-container">
+                    <div id="playhead-line" style="position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent-amber); left: 156px; pointer-events: none; display: none; z-index: 10;"></div>
+                    <div id="timeline"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Transmission Log
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="filter-bar">
+                    <span style="color: var(--text-secondary); font-size: 0.875rem;">Filter:</span>
+                    <div id="ch-filter-btns"></div>
+                    <div id="cs-filter-btns"></div>
+                    <input type="text" class="form-input" id="search-input" placeholder="Search callsign or channel…" style="margin-left: auto; min-width: 200px;" oninput="applyFilters()">
+                    <span style="color: var(--text-muted); font-size: 0.8125rem;" id="filter-count"></span>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th onclick="sort('idx')">#</th>
+                                <th onclick="sort('exsecs')">Exercise Time ▲</th>
+                                <th>Wall Time</th>
+                                <th onclick="sort('cs')">Callsign</th>
+                                <th>Unit / Role</th>
+                                <th>Channel</th>
+                                <th onclick="sort('d')">Duration</th>
+                                <th onclick="sort('sig')">Signal</th>
+                                <th>File</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tx-tbody">
+                            <tr><td colspan="10" class="empty-state">No transmissions recorded</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Participant Summary
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="p-grid" id="p-grid"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Channel Activity
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CH</th>
+                                <th>Net Name</th>
+                                <th>Freq</th>
+                                <th>Transmissions</th>
+                                <th>Total Air Time</th>
+                                <th>Callsigns</th>
+                                <th>First TX</th>
+                                <th>Last TX</th>
+                                <th>ENC</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ch-tbody">
+                            <tr><td colspan="9" class="empty-state">No channel data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Player -->
+    <div id="ap">
+        <div class="ap-header">
+            <div class="ap-cs mono" id="ap-cs">—</div>
+            <button class="ap-btn" onclick="stopAudio()">✕ Close</button>
+        </div>
+        <div class="ap-meta mono" id="ap-meta">—</div>
+        <div class="ap-progress">
+            <div class="ap-progress-bg" onclick="seekAudio(event)">
+                <div class="ap-progress-fill" id="ap-fill"></div>
+            </div>
+            <div class="ap-time mono" id="ap-time">0.0s / 0.0s</div>
+        </div>
+        <div class="ap-controls">
+            <button class="ap-btn" onclick="stopAudio()">◼ Stop</button>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tt"></div>
+
+    <script>
+'use strict';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIGURATION — in the real AAR this block is generated by radio_recorder.py
+// ─────────────────────────────────────────────────────────────────────────────
+const SESSION = {
+  exercise:     "EX TAMA TAUA 26",
+  date:         "16 MAR 2026",
+  session_id:   "20260316_091200",
+  generated:    "16 MAR 2026 11:41:05",
+  duration_s:   8537,             // total session length in seconds
+  // H-hour = start of exercise in local wall-clock seconds since midnight
+  // 09:12:00 = 9*3600 + 12*60 = 33120
+  h_hour_wall:  33120,
+  h_hour_source:"wall_clock",     // "wall_clock" | "manual" | "sword"
+  sword_url:    null,
+  is_live:      false,
+  server_url:   "http://localhost:8890",  // injected by recorder for WAV playback
+};
+
+const CHANNELS = [
+  {id:1, name:"COMMAND NET",  freq:"45.500 MHz", color:"#39ff55", encrypted:true },
+  {id:2, name:"ADMIN LOG",    freq:"46.000 MHz", color:"#00ddff", encrypted:true },
+  {id:3, name:"FIRE SUPPORT", freq:"46.500 MHz", color:"#ffaa00", encrypted:true },
+  {id:4, name:"AVIATION",     freq:"30.000 MHz", color:"#ff6655", encrypted:false},
+  {id:5, name:"ENGINEER",     freq:"47.000 MHz", color:"#cc88ff", encrypted:true },
+  {id:6, name:"MEDICAL",      freq:"47.500 MHz", color:"#55ffee", encrypted:false},
+];
+
+const CALLSIGNS = [
+  {cs:"OA",       name:"MAJ Smith, J",  unit:"BG HQ",     role:"CO"     },
+  {cs:"OB",       name:"CPT Jones, R",  unit:"BG HQ",     role:"2IC"    },
+  {cs:"STARLIGHT",name:"LT Chen, W",    unit:"BG HQ",     role:"IO"     },
+  {cs:"ACORN",    name:"MAJ Brown, T",  unit:"A COY",     role:"OC"     },
+  {cs:"ACORN 1",  name:"LT Tane, H",    unit:"A COY 1PL", role:"PL COMD"},
+  {cs:"BLUEBELL", name:"CPT Parata, M", unit:"B COY",     role:"OC"     },
+  {cs:"TARA",     name:"CPT Wilson, S", unit:"CSS COY",   role:"OC"     },
+  {cs:"HAWK",     name:"WO1 Davies, P", unit:"AVIATION",  role:"PILOT"  },
+];
+
+// Raw transmission data — wall_start = seconds since midnight on exercise date
+// exercise_time = wall_start - h_hour_wall (populated at render time)
+const RAW = [
+  {idx:1, cs:"OA",       ch:1, wall:33165, d:8.2,  sig:1.00},
+  {idx:2, cs:"ACORN",    ch:1, wall:33178, d:5.1,  sig:0.92},
+  {idx:3, cs:"OA",       ch:1, wall:33188, d:11.4, sig:1.00},
+  {idx:4, cs:"BLUEBELL", ch:1, wall:33205, d:6.8,  sig:0.88},
+  {idx:5, cs:"STARLIGHT",ch:1, wall:33216, d:9.3,  sig:0.95},
+  {idx:6, cs:"ACORN 1",  ch:1, wall:33232, d:4.2,  sig:0.81},
+  {idx:7, cs:"OA",       ch:1, wall:33242, d:7.6,  sig:1.00},
+  {idx:8, cs:"TARA",     ch:2, wall:33250, d:12.1, sig:0.97},
+  {idx:9, cs:"OB",       ch:2, wall:33268, d:5.5,  sig:0.99},
+  {idx:10,cs:"HAWK",     ch:4, wall:33275, d:18.4, sig:0.76},
+  {idx:11,cs:"OA",       ch:4, wall:33298, d:6.2,  sig:1.00},
+  {idx:12,cs:"HAWK",     ch:4, wall:33308, d:8.8,  sig:0.79},
+  {idx:13,cs:"ACORN",    ch:1, wall:33330, d:9.1,  sig:0.90},
+  {idx:14,cs:"ACORN 1",  ch:1, wall:33344, d:7.3,  sig:0.82},
+  {idx:15,cs:"BLUEBELL", ch:3, wall:33365, d:22.6, sig:0.88},
+  {idx:16,cs:"STARLIGHT",ch:3, wall:33392, d:11.2, sig:0.94},
+  {idx:17,cs:"OA",       ch:3, wall:33408, d:5.8,  sig:1.00},
+  {idx:18,cs:"BLUEBELL", ch:3, wall:33418, d:8.4,  sig:0.87},
+  {idx:19,cs:"TARA",     ch:6, wall:33440, d:15.3, sig:0.98},
+  {idx:20,cs:"OB",       ch:1, wall:33460, d:6.7,  sig:0.99},
+  {idx:21,cs:"OA",       ch:1, wall:33472, d:14.2, sig:1.00},
+  {idx:22,cs:"ACORN",    ch:5, wall:33490, d:19.8, sig:0.85},
+  {idx:23,cs:"ACORN 1",  ch:5, wall:33514, d:7.6,  sig:0.80},
+  {idx:24,cs:"ACORN",    ch:5, wall:33526, d:6.1,  sig:0.86},
+  {idx:25,cs:"HAWK",     ch:4, wall:33545, d:24.1, sig:0.72},
+  {idx:26,cs:"OA",       ch:4, wall:33573, d:9.3,  sig:1.00},
+  {idx:27,cs:"BLUEBELL", ch:1, wall:33590, d:8.8,  sig:0.89},
+  {idx:28,cs:"OA",       ch:1, wall:33604, d:11.5, sig:1.00},
+  {idx:29,cs:"STARLIGHT",ch:1, wall:33620, d:5.2,  sig:0.95},
+  {idx:30,cs:"TARA",     ch:2, wall:33635, d:16.7, sig:0.96},
+  {idx:31,cs:"OB",       ch:2, wall:33656, d:7.4,  sig:0.98},
+  {idx:32,cs:"TARA",     ch:6, wall:33675, d:12.2, sig:0.97},
+  {idx:33,cs:"BLUEBELL", ch:3, wall:33700, d:18.9, sig:0.88},
+  {idx:34,cs:"STARLIGHT",ch:3, wall:33723, d:9.6,  sig:0.94},
+  {idx:35,cs:"OA",       ch:3, wall:33737, d:7.1,  sig:1.00},
+  {idx:36,cs:"ACORN",    ch:1, wall:33755, d:6.3,  sig:0.91},
+  {idx:37,cs:"ACORN 1",  ch:1, wall:33765, d:5.8,  sig:0.83},
+  {idx:38,cs:"OA",       ch:1, wall:33775, d:18.4, sig:1.00},
+  {idx:39,cs:"BLUEBELL", ch:1, wall:33798, d:8.2,  sig:0.89},
+  {idx:40,cs:"OB",       ch:1, wall:33811, d:6.9,  sig:0.99},
+  {idx:41,cs:"HAWK",     ch:4, wall:33830, d:31.2, sig:0.68},
+  {idx:42,cs:"OA",       ch:4, wall:33865, d:8.6,  sig:1.00},
+  {idx:43,cs:"HAWK",     ch:4, wall:33877, d:11.4, sig:0.70},
+  {idx:44,cs:"TARA",     ch:2, wall:33900, d:9.8,  sig:0.97},
+  {idx:45,cs:"OB",       ch:2, wall:33914, d:5.3,  sig:0.98},
+  {idx:46,cs:"ACORN",    ch:5, wall:33930, d:14.6, sig:0.84},
+  {idx:47,cs:"ACORN 1",  ch:5, wall:33949, d:7.2,  sig:0.81},
+  {idx:48,cs:"ACORN",    ch:1, wall:33970, d:9.7,  sig:0.91},
+  {idx:49,cs:"OA",       ch:1, wall:33984, d:13.8, sig:1.00},
+  {idx:50,cs:"BLUEBELL", ch:1, wall:34002, d:7.5,  sig:0.88},
+  {idx:51,cs:"STARLIGHT",ch:3, wall:34020, d:21.3, sig:0.93},
+  {idx:52,cs:"BLUEBELL", ch:3, wall:34045, d:10.4, sig:0.87},
+  {idx:53,cs:"OA",       ch:3, wall:34060, d:6.8,  sig:1.00},
+  {idx:54,cs:"TARA",     ch:6, wall:34080, d:8.9,  sig:0.96},
+  {idx:55,cs:"OA",       ch:1, wall:34100, d:16.2, sig:1.00},
+  {idx:56,cs:"ACORN",    ch:1, wall:34121, d:8.1,  sig:0.90},
+  {idx:57,cs:"ACORN 1",  ch:1, wall:34134, d:5.6,  sig:0.82},
+  {idx:58,cs:"BLUEBELL", ch:1, wall:34144, d:7.3,  sig:0.88},
+  {idx:59,cs:"OB",       ch:2, wall:34165, d:11.8, sig:0.98},
+  {idx:60,cs:"TARA",     ch:2, wall:34181, d:9.2,  sig:0.97},
+  {idx:61,cs:"HAWK",     ch:4, wall:34205, d:27.6, sig:0.65},
+  {idx:62,cs:"OA",       ch:4, wall:34236, d:9.4,  sig:1.00},
+  {idx:63,cs:"HAWK",     ch:4, wall:34249, d:14.1, sig:0.67},
+  {idx:64,cs:"ACORN",    ch:5, wall:34275, d:18.2, sig:0.83},
+  {idx:65,cs:"ACORN 1",  ch:5, wall:34297, d:8.8,  sig:0.80},
+  {idx:66,cs:"OA",       ch:1, wall:34320, d:22.4, sig:1.00},
+  {idx:67,cs:"BLUEBELL", ch:1, wall:34346, d:9.6,  sig:0.87},
+  {idx:68,cs:"STARLIGHT",ch:1, wall:34360, d:6.1,  sig:0.95},
+  {idx:69,cs:"BLUEBELL", ch:3, wall:34380, d:16.8, sig:0.88},
+  {idx:70,cs:"STARLIGHT",ch:3, wall:34401, d:11.4, sig:0.93},
+  {idx:71,cs:"OA",       ch:3, wall:34416, d:7.9,  sig:1.00},
+  {idx:72,cs:"TARA",     ch:6, wall:34440, d:13.6, sig:0.96},
+  {idx:73,cs:"OB",       ch:2, wall:34465, d:8.3,  sig:0.98},
+  {idx:74,cs:"TARA",     ch:2, wall:34478, d:12.7, sig:0.97},
+  {idx:75,cs:"OA",       ch:1, wall:34500, d:9.1,  sig:1.00},
+  {idx:76,cs:"ACORN",    ch:1, wall:34514, d:7.4,  sig:0.90},
+  {idx:77,cs:"BLUEBELL", ch:1, wall:34525, d:5.8,  sig:0.87},
+  {idx:78,cs:"HAWK",     ch:4, wall:34550, d:22.3, sig:0.71},
+  {idx:79,cs:"OA",       ch:4, wall:34576, d:8.7,  sig:1.00},
+  {idx:80,cs:"ACORN 1",  ch:1, wall:34595, d:6.2,  sig:0.83},
+  {idx:81,cs:"OA",       ch:1, wall:34605, d:14.6, sig:1.00},
+  {idx:82,cs:"STARLIGHT",ch:3, wall:34630, d:19.1, sig:0.94},
+  {idx:83,cs:"BLUEBELL", ch:3, wall:34653, d:11.8, sig:0.87},
+  {idx:84,cs:"TARA",     ch:6, wall:34680, d:9.4,  sig:0.96},
+  {idx:85,cs:"OA",       ch:1, wall:34700, d:17.3, sig:1.00},
+  {idx:86,cs:"ACORN",    ch:1, wall:34721, d:8.9,  sig:0.89},
+  {idx:87,cs:"OB",       ch:2, wall:34745, d:7.6,  sig:0.98},
+  {idx:88,cs:"TARA",     ch:2, wall:34757, d:11.2, sig:0.97},
+  {idx:89,cs:"BLUEBELL", ch:1, wall:34780, d:6.7,  sig:0.87},
+  {idx:90,cs:"OA",       ch:1, wall:34792, d:20.8, sig:1.00},
+  {idx:91,cs:"STARLIGHT",ch:1, wall:34817, d:8.3,  sig:0.94},
+  {idx:92,cs:"ACORN 1",  ch:5, wall:34840, d:16.4, sig:0.81},
+  {idx:93,cs:"ACORN",    ch:5, wall:34860, d:9.1,  sig:0.83},
+  {idx:94,cs:"HAWK",     ch:4, wall:34885, d:28.4, sig:0.69},
+  {idx:95,cs:"OA",       ch:4, wall:34917, d:7.8,  sig:1.00},
+  {idx:96,cs:"BLUEBELL", ch:3, wall:34940, d:14.2, sig:0.88},
+  {idx:97,cs:"STARLIGHT",ch:3, wall:34958, d:10.6, sig:0.93},
+  {idx:98,cs:"OA",       ch:1, wall:34980, d:11.4, sig:1.00},
+  {idx:99,cs:"TARA",     ch:6, wall:35000, d:8.8,  sig:0.96},
+  {idx:100,cs:"ACORN",   ch:1, wall:35020, d:7.2,  sig:0.90},
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIME HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+// hHour is seconds-since-midnight of H-hour (can be updated interactively)
+let hHour = SESSION.h_hour_wall;
+let playingIdx = null;  // idx of currently playing TX (null = nothing playing)
+
+function wallSecsToHHMM(secs) {
+  const h = Math.floor(secs / 3600) % 24;
+  const m = Math.floor((secs % 3600) / 60);
+  const s = Math.floor(secs % 60);
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+}
+
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function exTimeStr(wallSecs) {
+  // Local exercise time = wall clock time on the exercise date
+  return wallSecsToHHMM(wallSecs) + 'L';
+}
+
+function durationStr(secs) {
+  if (secs < 60) return secs.toFixed(1) + 's';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}m ${s}s`;
+}
+
+function nowWallSecs() {
+  const n = new Date();
+  return n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds() + n.getMilliseconds()/1000;
+}
+
+// Build derived transmissions
+function buildTX() {
+  return RAW.map(r => ({
+    ...r,
+    // exwall: sim clock secs when SWORD active, otherwise = wall clock secs
+    // Use it for exercise time display and timeline positioning.
+    // r.exwall is injected by the recorder; fall back to r.wall if absent.
+    exwall:   (r.exwall !== undefined) ? r.exwall : r.wall,
+    extime:   exTimeStr((r.exwall !== undefined) ? r.exwall : r.wall),
+    walltime: wallSecsToHHMM(r.wall) + 'L',
+    exsecs:   ((r.exwall !== undefined) ? r.exwall : r.wall) - hHour,
+    csinfo:   CALLSIGNS.find(c => c.cs === r.cs) || {cs:r.cs, name:'', unit:'', role:''},
+    chinfo:   CHANNELS.find(c => Number(c.id) === Number(r.ch)) || {id:r.ch, name:'CH'+String(r.ch).padStart(2,'0'), color:'#888888', encrypted:false},
+    file:     `tx_${String(r.idx).padStart(4,'0')}_${(r.cs||'').replace(' ','_')}_CH${pad2(r.ch)}.wav`,
+  }));
+}
+
+let TX = buildTX();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H-HOUR PANEL — read-only, populated from SESSION data at init
+// ─────────────────────────────────────────────────────────────────────────────
+function renderHHourPanel() {
+  // Time source label
+  const srcMap = {wall: 'Wall Clock (PC)', manual: 'Manual H-Hour', sword: 'SWORD / SimBridge'};
+  const srcLabel = srcMap[SESSION.h_hour_source] || SESSION.h_hour_source || 'Wall Clock (PC)';
+  const isSword  = SESSION.h_hour_source === 'sword';
+
+  const srcEl = document.getElementById('hhour-source-label');
+  const valEl = document.getElementById('hhour-value-label');
+  const stEl  = document.getElementById('hhour-status');
+
+  if (srcEl) {
+    srcEl.textContent = srcLabel;
+    srcEl.style.color = isSword ? 'var(--am)' : 'var(--ph)';
+  }
+  if (valEl) valEl.textContent = wallSecsToHHMM(hHour) + 'L';
+  if (stEl) {
+    if (isSword && SESSION.sword_url) {
+      stEl.innerHTML = `Times shown are SWORD scenario clock times recorded via SimBridge`
+        + ` &nbsp;(<span style="color:var(--txd)">${SESSION.sword_url}</span>)`;
+      stEl.style.color = 'var(--txm)';
+    } else if (SESSION.h_hour_source === 'manual') {
+      stEl.textContent = `Exercise times are relative to manual H-Hour: ${wallSecsToHHMM(hHour)}L`;
+      stEl.style.color = 'var(--txm)';
+    } else {
+      stEl.textContent = `Exercise times reflect wall clock time at each transmission`;
+      stEl.style.color = 'var(--txd)';
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COVER META
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCoverMeta() {
+  const start = exTimeStr(SESSION.h_hour_wall);
+  const end   = exTimeStr(SESSION.h_hour_wall + SESSION.duration_s);
+  const srcMap = {wall: 'Wall Clock (PC)', manual: 'Manual H-Hour', sword: 'SWORD / SimBridge'};
+  const src   = srcMap[SESSION.h_hour_source] || 'Wall Clock (PC)';
+  document.getElementById('cover-meta').innerHTML = `
+    <div><strong>EXERCISE</strong> &nbsp;${SESSION.exercise}</div>
+    <div><strong>DATE</strong> &nbsp;${SESSION.date}</div>
+    <div><strong>EX START</strong> &nbsp;${start}</div>
+    <div><strong>EX END</strong> &nbsp;${end}</div>
+    <div><strong>DURATION</strong> &nbsp;${durationStr(SESSION.duration_s)}</div>
+    <div><strong>TIME SOURCE</strong> &nbsp;${src}</div>
+    <div><strong>GENERATED</strong> &nbsp;${SESSION.generated}</div>
+    <div style="margin-top:4px;color:var(--phd)">MilRadio v1.0 &nbsp;|&nbsp; SimBridge v1.2</div>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderStats() {
+  const totalAir = TX.reduce((s,t) => s+t.d, 0);
+  const avgTx    = TX.length ? totalAir / TX.length : 0;
+  const durH = Math.floor(SESSION.duration_s/3600);
+  const durM = Math.floor((SESSION.duration_s%3600)/60);
+  const durS = Math.floor(SESSION.duration_s%60);
+  document.getElementById('stat-tx').textContent     = TX.length;
+  document.getElementById('stat-callsigns').textContent = new Set(TX.map(t=>t.cs)).size;
+  document.getElementById('stat-channels').textContent  = new Set(TX.map(t=>t.ch)).size;
+  document.getElementById('stat-duration').textContent  = `${pad2(durH)}:${pad2(durM)}:${pad2(durS)}`;
+  document.getElementById('stat-airtime').textContent   = durationStr(totalAir);
+  document.getElementById('live-badge').style.display = SESSION.is_live ? 'inline-flex' : 'none';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIMELINE
+// ─────────────────────────────────────────────────────────────────────────────
+let tlZoom = 1.0;
+let mutedCh = new Set();
+
+function buildLegend() {
+  const el = document.getElementById('ch-legend');
+  el.innerHTML = CHANNELS.map(ch => `
+    <div class="ch-leg-item ${mutedCh.has(ch.id)?'muted':''}" onclick="toggleMute(${ch.id})">
+      <div class="ch-leg-swatch" style="background:${ch.color}"></div>
+      <span>CH${pad2(ch.id)} ${ch.name}</span>
+    </div>`).join('') +
+    `<span style="margin-left:auto;font-size:9px;color:var(--txm)">
+       Click channel to toggle &nbsp;|&nbsp;
+       Time axis: local exercise time
+     </span>`;
+}
+
+function toggleMute(id) {
+  if (mutedCh.has(id)) mutedCh.delete(id);
+  else mutedCh.add(id);
+  buildLegend();
+  buildTimeline();
+}
+
+function zoom(dir) {
+  tlZoom = dir===0 ? 1.0 : Math.max(0.3, Math.min(5.0, tlZoom * (dir>0?1.4:0.72)));
+  buildTimeline();
+}
+
+function buildTimeline() {
+  const container = document.getElementById('timeline');
+  container.innerHTML = '';
+  const trackW = Math.round(1100 * tlZoom);
+  const tStart = SESSION.h_hour_wall;
+  const tEnd   = tStart + SESSION.duration_s;
+
+  // Axis
+  const axis = document.createElement('div');
+  axis.className = 'tl-axis';
+  axis.style.width = trackW + 'px';
+
+  // Choose tick interval based on duration and zoom
+  const dur = SESSION.duration_s;
+  let minorSecs = 120, majorSecs = 600;
+  if (tlZoom >= 2)   { minorSecs = 30;  majorSecs = 300; }
+  else if (tlZoom >= 1) { minorSecs = 60;  majorSecs = 300; }
+  else if (tlZoom < 0.5){ minorSecs = 300; majorSecs = 1800;}
+
+  for (let t = 0; t <= dur; t += minorSecs) {
+    const pct    = t / dur;
+    const isMajor = (t % majorSecs === 0);
+    const tick   = document.createElement('div');
+    tick.className = 'tl-tick ' + (isMajor?'major':'minor');
+    tick.style.left   = (pct*100)+'%';
+    tick.style.height = isMajor ? '14px' : '6px';
+    axis.appendChild(tick);
+    if (isMajor) {
+      const lbl = document.createElement('div');
+      lbl.className    = 'tl-tick-label';
+      lbl.style.left   = (pct*100)+'%';
+      lbl.textContent  = wallSecsToHHMM(tStart + t) + 'L';
+      axis.appendChild(lbl);
+    }
+  }
+  container.appendChild(axis);
+
+  // Channel rows
+  CHANNELS.forEach(ch => {
+    const chTX = TX.filter(t => Number(t.ch) === Number(ch.id));
+    if (!chTX.length) return;
+
+    const row = document.createElement('div');
+    row.className = 'tl-row';
+
+    const lbl = document.createElement('div');
+    lbl.className   = 'tl-ch-label';
+    lbl.style.color = ch.color;
+    lbl.innerHTML   = `<span style="font-size:9px;color:var(--txm)">CH${pad2(ch.id)}</span> ${ch.name}`;
+    row.appendChild(lbl);
+
+    const track = document.createElement('div');
+    track.className     = 'tl-track';
+    track.style.width   = trackW + 'px';
+    track.style.opacity = mutedCh.has(ch.id) ? '0.2' : '1';
+
+    chTX.forEach(tx => {
+      const txEx     = (tx.exwall !== undefined) ? tx.exwall : tx.wall;
+      const leftPct  = ((txEx - tStart) / dur) * 100;
+      const widthPct = Math.max((tx.d / dur) * 100, 0.12);
+      const block    = document.createElement('div');
+      block.className = 'tl-block' + (playingIdx===tx.idx?' playing':'');
+      block.style.cssText = `left:${leftPct}%;width:${widthPct}%;background:${ch.color};color:${ch.color}`;
+      if (widthPct > 1.2) {
+        const l = document.createElement('div');
+        l.className   = 'tl-block-lbl';
+        l.textContent = tx.cs;
+        block.appendChild(l);
+      }
+      block.addEventListener('mouseenter', e => showTT(e, tx));
+      block.addEventListener('mousemove',  e => moveTT(e));
+      block.addEventListener('mouseleave', hideTT);
+      block.addEventListener('click',      () => playTx(tx.idx));
+      track.appendChild(block);
+    });
+
+    row.appendChild(track);
+    container.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FILTER / TABLE
+// ─────────────────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+let sortState    = {col:'idx', dir:1};
+let filteredTX   = [...TX];
+
+function buildFilterBtns() {
+  // Channel buttons
+  document.getElementById('ch-filter-btns').innerHTML = CHANNELS.map(ch =>
+    `<button class="filter-btn" style="color:${ch.color};border-color:${ch.color}44"
+             onclick="setChFilter(${ch.id},this)">CH${pad2(ch.id)}</button>`
+  ).join('');
+
+  // Callsign buttons
+  const allCS = [...new Set(TX.map(t=>t.cs))].sort();
+  document.getElementById('cs-filter-btns').innerHTML = allCS.map(cs =>
+    `<button class="filter-btn" style="font-size:9px"
+             onclick="setCSFilter('${cs}',this)">${cs}</button>`
+  ).join('');
+}
+
+function setFilter(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+function setChFilter(id, btn) {
+  activeFilter = 'ch'+id;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+function setCSFilter(cs, btn) {
+  activeFilter = 'cs:'+cs;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  filteredTX = TX.filter(tx => {
+    if (activeFilter.startsWith('ch') && !activeFilter.startsWith('cs')) {
+      if (tx.ch !== parseInt(activeFilter.slice(2))) return false;
+    }
+    if (activeFilter.startsWith('cs:')) {
+      if (tx.cs !== activeFilter.slice(3)) return false;
+    }
+    if (q && !tx.cs.toLowerCase().includes(q) && !tx.chinfo.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  renderTable();
+}
+
+function sort(col) {
+  sortState.dir = (sortState.col===col) ? -sortState.dir : 1;
+  sortState.col = col;
+  renderTable();
+}
+
+function renderTable() {
+  const sorted = [...filteredTX].sort((a,b) => {
+    const va = a[sortState.col], vb = b[sortState.col];
+    if (typeof va==='string') return sortState.dir * va.localeCompare(vb);
+    return sortState.dir * (va - vb);
+  });
+  document.getElementById('filter-count').textContent =
+    `${sorted.length} / ${TX.length}`;
+
+  const maxD = Math.max(...TX.map(t=>t.d));
+  document.getElementById('tx-tbody').innerHTML = sorted.map(tx => {
+    const barW = Math.round((tx.d/maxD)*110);
+    const sig  = Math.round(tx.sig*100);
+    const sigCol = tx.sig>0.7?'var(--ph)':tx.sig>0.4?'var(--am)':'var(--rd)';
+    const isPlay = playingIdx===tx.idx;
+    return `<tr class="${isPlay?'playing':''}" onclick="playTx(${tx.idx})" style="cursor:pointer">
+      <td style="color:var(--txm);font-size:10px">${tx.idx}</td>
+      <td style="color:var(--ph);font-weight:bold;white-space:nowrap">${tx.extime}</td>
+      <td style="color:var(--txm);font-size:10px;white-space:nowrap">${tx.walltime}</td>
+      <td style="font-weight:bold;white-space:nowrap">${tx.cs}</td>
+      <td style="color:var(--txm);font-size:10px;white-space:nowrap">${tx.csinfo.unit} / ${tx.csinfo.role}</td>
+      <td><span class="ch-badge" style="color:${tx.chinfo.color};border-color:${tx.chinfo.color};background:${tx.chinfo.color}18">
+        CH${pad2(tx.ch)}</span></td>
+      <td>
+        <div class="dur-bar-wrap">
+          <div class="dur-bar"><div style="width:${barW}px;background:${tx.chinfo.color}"></div></div>
+          <span class="dur-val">${tx.d.toFixed(1)}s</span>
+        </div>
+      </td>
+      <td style="color:${sigCol};font-size:10px">${sig}%</td>
+      <td style="color:var(--txm);font-size:9px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${tx.file}
+      </td>
+      <td><button class="play-btn ${isPlay?'active':''}"
+                  onclick="event.stopPropagation();playTx(${tx.idx})">
+        ${isPlay?'&#9632;':'&#9654;'}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARTICIPANTS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderParticipants() {
+  const maxTx = Math.max(...CALLSIGNS.map(cs => TX.filter(t=>t.cs===cs.cs).length), 1);
+  document.getElementById('p-grid').innerHTML = CALLSIGNS.map(cs => {
+    const txs   = TX.filter(t => t.cs===cs.cs);
+    if (!txs.length) return '';
+    const air   = txs.reduce((s,t)=>s+t.d,0);
+    const chIds = [...new Set(txs.map(t=>t.ch))].sort();
+    const pct   = Math.round((txs.length/maxTx)*100);
+    const badges = chIds.map(id => {
+      const ch = CHANNELS.find(c=>c.id===id);
+      return ch ? `<span style="color:${ch.color};font-size:9px;margin-right:4px">CH${pad2(id)}</span>` : '';
+    }).join('');
+    return `<div class="p-card">
+      <div class="p-callsign">${cs.cs}</div>
+      <div class="p-name">${cs.name}</div>
+      <div class="p-stats">
+        <span style="color:var(--txm)">${txs.length}</span> tx &nbsp;|&nbsp;
+        <span style="color:var(--txm)">${durationStr(air)}</span> air time<br>
+        <span style="color:var(--txm)">Unit:</span> ${cs.unit} &mdash; ${cs.role}<br>
+        <span style="color:var(--txm)">Nets:</span> ${badges}
+      </div>
+      <div class="p-bar"><div class="p-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHANNEL BREAKDOWN
+// ─────────────────────────────────────────────────────────────────────────────
+function renderChBreakdown() {
+  document.getElementById('ch-tbody').innerHTML = CHANNELS.map(ch => {
+    const txs = TX.filter(t=>t.ch===ch.id);
+    if (!txs.length) return '';
+    const air  = txs.reduce((s,t)=>s+t.d,0);
+    const csSet = [...new Set(txs.map(t=>t.cs))];
+    return `<tr>
+      <td><span class="ch-badge" style="color:${ch.color};border-color:${ch.color};background:${ch.color}18">
+        CH${pad2(ch.id)}</span></td>
+      <td style="font-weight:bold;color:var(--tx)">${ch.name}</td>
+      <td style="color:var(--txm);font-size:10px">${ch.freq}</td>
+      <td style="color:var(--ph)">${txs.length}</td>
+      <td style="color:var(--am)">${durationStr(air)}</td>
+      <td style="color:var(--txm);font-size:10px">${csSet.join(', ')}</td>
+      <td style="color:var(--txm);font-size:10px">${txs[0].extime}</td>
+      <td style="color:var(--txm);font-size:10px">${txs[txs.length-1].extime}</td>
+      <td>${ch.encrypted
+        ? '<span style="color:var(--ph);font-size:9px">AES-256</span>'
+        : '<span style="color:var(--am);font-size:9px">OPEN</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO PLAYBACK — HTML5 Audio Element for offline & online capability
+// ─────────────────────────────────────────────────────────────────────────────
+let _audio = null;
+let _audioStartTime = 0;
+let _audioDuration = 0;
+let _audioRafId = null;
+
+async function playTx(idx) {
+  const tx = TX.find(t => t.idx === idx);
+  if (!tx) return;
+  if (playingIdx === idx) { stopAudio(); return; }
+  stopAudio();
+  playingIdx = idx;
+
+  const ap = document.getElementById('ap');
+  ap.classList.add('visible');
+  document.getElementById('ap-cs').textContent = tx.cs;
+  document.getElementById('ap-cs').style.color = tx.chinfo.color;
+  document.getElementById('ap-meta').textContent =
+    `CH${pad2(tx.ch)} ${tx.chinfo.name}  |  ${tx.extime}  |  ${tx.walltime}  |  ` +
+    `${tx.d.toFixed(1)}s  |  ${tx.csinfo.unit} — ${tx.csinfo.role}`;
+  document.getElementById('ap-time').textContent = `0.0s / ${tx.d.toFixed(1)}s`;
+  document.getElementById('ap-fill').style.width = '0%';
+
+  renderTable(); buildTimeline();
+
+  // AAR loopback update
+  window.isPlaying = true;
+  window.playhead = tx.exsecs;
+  if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+  if (window.postPlaybackState) window.postPlaybackState();
+
+  // Build WAV URL
+  let wavUrl;
+  if (SESSION.server_url) {
+    wavUrl = `${SESSION.server_url}/api/aar/wav/${SESSION.session_id}/${encodeURIComponent(tx.file)}`;
+  } else {
+    // Relative path for offline ZIP playback
+    wavUrl = encodeURIComponent(tx.file);
+  }
+
+  try {
+    _audio = new Audio(wavUrl);
+    _audio.playbackRate = window.playbackSpeed || 1.0;
+
+    // Wire up events
+    _audio.onended = () => {
+      if (playingIdx === idx) {
+        stopAudio();
+      }
+    };
+
+    _audio.onerror = (e) => {
+      document.getElementById('ap-meta').textContent += `  |  ERROR: Failed to load audio`;
+      document.getElementById('ap-cs').style.color = 'var(--rd)';
+      console.warn('Audio playback failed:', e);
+      window.isPlaying = false;
+      if (window.postPlaybackState) window.postPlaybackState();
+    };
+
+    // Play the audio
+    await _audio.play();
+
+    // Progress bar update loop
+    function _updateProgress() {
+      if (playingIdx !== idx || !_audio) return;
+      const elapsed = _audio.currentTime;
+      const duration = isFinite(_audio.duration) && _audio.duration > 0 ? _audio.duration : tx.d;
+      const pct = (elapsed / duration) * 100;
+      document.getElementById('ap-fill').style.width = pct + '%';
+      document.getElementById('ap-time').textContent =
+        elapsed.toFixed(1) + 's / ' + duration.toFixed(1) + 's';
+      
+      // Update playhead
+      window.playhead = tx.exsecs + elapsed;
+      if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+
+      if (elapsed < duration && !_audio.paused) {
+        _audioRafId = requestAnimationFrame(_updateProgress);
+      }
+    }
+
+    _audio.onplay = () => {
+      _audioRafId = requestAnimationFrame(_updateProgress);
+      window.isPlaying = true;
+      if (window.postPlaybackState) window.postPlaybackState();
+    };
+
+    _audio.onpause = () => {
+      window.isPlaying = false;
+      if (window.postPlaybackState) window.postPlaybackState();
+    };
+
+    _audioRafId = requestAnimationFrame(_updateProgress);
+
+  } catch(e) {
+    document.getElementById('ap-meta').textContent += `  |  ERROR: ${e.message}`;
+    document.getElementById('ap-cs').style.color = 'var(--rd)';
+    console.warn('Audio playback failed:', e);
+    window.isPlaying = false;
+    if (window.postPlaybackState) window.postPlaybackState();
+  }
+}
+
+function stopAudio() {
+  if (_audioRafId) { cancelAnimationFrame(_audioRafId); _audioRafId = null; }
+  if (_audio) {
+    try { _audio.pause(); } catch(e) {}
+    _audio = null;
+  }
+  playingIdx = null;
+  document.getElementById('ap').classList.remove('visible');
+  document.getElementById('ap-fill').style.width = '0%';
+  renderTable(); buildTimeline();
+
+  // AAR loopback update
+  window.isPlaying = false;
+  if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+  if (window.postPlaybackState) window.postPlaybackState();
+}
+
+function seekAudio(e) {
+  if (!_audio) return;
+  const bg = e.currentTarget;
+  const rect = bg.getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1,(e.clientX-rect.left)/rect.width));
+  const duration = isFinite(_audio.duration) && _audio.duration > 0 ? _audio.duration : 0;
+  if (duration > 0) {
+    _audio.currentTime = pct * duration;
+    document.getElementById('ap-fill').style.width = (pct*100)+'%';
+    if (playingIdx !== null) {
+      const tx = TX.find(t => t.idx === playingIdx);
+      if (tx) {
+        window.playhead = tx.exsecs + _audio.currentTime;
+        if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+        if (window.postPlaybackState) window.postPlaybackState();
+      }
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOOLTIP
+// ─────────────────────────────────────────────────────────────────────────────
+function showTT(e, tx) {
+  document.getElementById('tt').innerHTML =
+    `<span style="font-weight:bold;font-size:12px;color:${tx.chinfo.color}">${tx.cs}</span>
+     <span style="font-size:9px;color:var(--txm);margin-left:6px">CH${pad2(tx.ch)} ${tx.chinfo.name}</span><br>
+     <span style="color:var(--txm)">Exercise: </span><span style="color:var(--ph)">${tx.extime}</span><br>
+     <span style="color:var(--txm)">Wall:     </span>${tx.walltime}<br>
+     <span style="color:var(--txm)">Duration: </span>${tx.d.toFixed(1)}s<br>
+     <span style="color:var(--txm)">Signal:   </span>${Math.round(tx.sig*100)}%<br>
+     <span style="color:var(--txm)">Unit:     </span>${tx.csinfo.unit} / ${tx.csinfo.role}<br>
+     <span style="font-size:9px;color:var(--phd);margin-top:2px;display:block">Click to play</span>`;
+  document.getElementById('tt').classList.add('visible');
+  moveTT(e);
+}
+function moveTT(e) {
+  const tt = document.getElementById('tt');
+  tt.style.left = (e.clientX+14)+'px';
+  tt.style.top  = (e.clientY-10)+'px';
+}
+function hideTT() { document.getElementById('tt').classList.remove('visible'); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPORT
+// ─────────────────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const hdr = ['#','EXERCISE_TIME','WALL_TIME','CALLSIGN','UNIT','ROLE','CHANNEL','CH_NAME','DURATION_S','SIGNAL_PCT','FILE'];
+  const rows = TX.map(tx => [
+    tx.idx, tx.extime, tx.walltime, tx.cs,
+    tx.csinfo.unit, tx.csinfo.role,
+    tx.ch, tx.chinfo.name,
+    tx.d.toFixed(1), Math.round(tx.sig*100),
+    tx.file
+  ]);
+  const csv = [hdr,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\r\n');
+  dl(csv,'text/csv',`milradio_aar_${SESSION.session_id}.csv`);
+}
+
+function exportJSON() {
+  const data = {session:SESSION, channels:CHANNELS, callsigns:CALLSIGNS,
+                h_hour_source:SESSION.h_hour_source, h_hour_wall:hHour,
+                transmissions:TX.map(({csinfo,chinfo,...rest})=>rest)};
+  dl(JSON.stringify(data,null,2),'application/json',`milradio_aar_${SESSION.session_id}.json`);
+}
+
+function dl(content, mime, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download = filename;
+  a.click();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FULL REFRESH (called when H-hour changes)
+// ─────────────────────────────────────────────────────────────────────────────
+function refreshAll() {
+  TX = buildTX();
+  filteredTX = [...TX];
+  const fns = [renderHHourPanel, renderCoverMeta, renderStats, buildLegend, buildTimeline,
+               buildFilterBtns, applyFilters, renderParticipants, renderChBreakdown];
+  fns.forEach(fn => {
+    try { fn(); }
+    catch(e) { console.error(`AAR render error in ${fn.name}:`, e); }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+try {
+  refreshAll();
+  // Show data-loaded confirmation or no-data warning
+  if (TX.length === 0) {
+    document.body.insertAdjacentHTML('afterbegin',
+      `<div style="background:#332800;color:#ffaa00;font-family:monospace;font-size:12px;
+        padding:10px 16px;border-bottom:2px solid #ffaa00">
+        <strong>NO TRANSMISSIONS:</strong> The session manifest contains 0 transmissions.
+        This may mean the recording stopped before any PTT activity was captured,
+        or the session folder is missing WAV files.
+        Session: <strong>${SESSION.session_id}</strong>
+      </div>`
+    );
+  }
+} catch(e) {
+  // Surface any init error visibly so it can be reported
+  document.body.insertAdjacentHTML('afterbegin',
+    `<div style="background:#330000;color:#ff6666;font-family:monospace;font-size:12px;
+      padding:12px 16px;position:fixed;top:0;left:0;right:0;z-index:99999;border-bottom:2px solid #ff3333">
+      <strong>AAR REPORT ERROR:</strong> ${e.message}<br>
+      <small>Line: ${e.stack ? e.stack.split('\\n')[1] : 'unknown'}</small><br>
+      <small>SESSION.session_id=${SESSION&&SESSION.session_id} RAW.length=${typeof RAW!=='undefined'?RAW.length:'undefined'}</small>
+    </div>`
+  );
+  console.error('AAR init error:', e);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AAR LOOPBACK PLAYBACK CONTROL (SSE + POST)
+// ─────────────────────────────────────────────────────────────────────────────
+(function() {
+  window.isPlaying = false;
+  window.playbackSpeed = 1.0;
+  window.playhead = 0.0;
+
+  // Visual updater for the playhead line
+  window.updatePlayheadVisuals = function() {
+    const playheadLine = document.getElementById('playhead-line');
+    if (!playheadLine) return;
+    
+    const timelineContainer = document.querySelector('.timeline-container');
+    if (!timelineContainer) return;
+    
+    const trackW = Math.round(1100 * tlZoom);
+    const duration = SESSION.duration_s || 1.0;
+    
+    // Position of track starts at 16px padding + 140px spacer = 156px from left
+    const leftPx = 16 + 140 + (window.playhead / duration) * trackW;
+    
+    playheadLine.style.left = leftPx + 'px';
+    playheadLine.style.display = 'block';
+  };
+
+  // Function to find transmission at session time T (seconds since H-Hour)
+  function getTxAtTime(t) {
+    return TX.find(tx => {
+      const start = tx.exsecs;
+      const end = tx.exsecs + tx.d;
+      return t >= start && t <= end;
+    });
+  }
+
+  // Helper to resume playback at current playhead
+  async function resumePlayback() {
+    window.isPlaying = true;
+    const tx = getTxAtTime(window.playhead);
+    if (tx) {
+      const offset = window.playhead - tx.exsecs;
+      await playTx(tx.idx);
+      if (_audio) {
+        _audio.currentTime = offset;
+        _audio.playbackRate = window.playbackSpeed;
+      }
+    } else {
+      // Just keep ticking playhead
+      if (playingIdx !== null) {
+        stopAudio();
+      }
+      window.isPlaying = true;
+      if (window.postPlaybackState) window.postPlaybackState();
+    }
+  }
+
+  // Helper to pause playback
+  function pausePlayback() {
+    window.isPlaying = false;
+    if (_audio) {
+      _audio.pause();
+    }
+    if (window.postPlaybackState) window.postPlaybackState();
+  }
+
+  // Helper to seek to a specific session time (seconds since H-Hour)
+  async function seekToSessionTime(t) {
+    window.playhead = Math.max(0, Math.min(SESSION.duration_s, t));
+    const tx = getTxAtTime(window.playhead);
+    
+    if (tx) {
+      const offset = window.playhead - tx.exsecs;
+      if (playingIdx !== tx.idx) {
+        await playTx(tx.idx);
+        if (_audio) {
+          _audio.currentTime = offset;
+          _audio.playbackRate = window.playbackSpeed;
+          if (!window.isPlaying) _audio.pause();
+        }
+      } else {
+        if (_audio) {
+          _audio.currentTime = offset;
+        }
+      }
+    } else {
+      if (playingIdx !== null) {
+        stopAudio();
+      }
+    }
+    
+    if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+    if (window.postPlaybackState) window.postPlaybackState();
+  }
+
+  function setPlaybackSpeed(rate) {
+    window.playbackSpeed = rate;
+    if (_audio) {
+      _audio.playbackRate = rate;
+    }
+    if (window.postPlaybackState) window.postPlaybackState();
+  }
+
+  // Ticking playhead when playing
+  let lastTick = Date.now();
+  setInterval(() => {
+    if (window.isPlaying) {
+      const now = Date.now();
+      const dt = (now - lastTick) / 1000.0 * window.playbackSpeed;
+      window.playhead += dt;
+      
+      if (window.playhead >= SESSION.duration_s) {
+        window.playhead = SESSION.duration_s;
+        window.isPlaying = false;
+        if (_audio) _audio.pause();
+      } else {
+        // Check if we cross into a new transmission or out of one
+        const tx = getTxAtTime(window.playhead);
+        if (tx) {
+          if (playingIdx !== tx.idx) {
+            const offset = window.playhead - tx.exsecs;
+            playTx(tx.idx).then(() => {
+              if (_audio) {
+                _audio.currentTime = offset;
+                _audio.playbackRate = window.playbackSpeed;
+              }
+            });
+          }
+        } else {
+          if (playingIdx !== null) {
+            stopAudio();
+            // keep isPlaying true so timeline keeps ticking
+            window.isPlaying = true;
+          }
+        }
+      }
+      if (window.updatePlayheadVisuals) window.updatePlayheadVisuals();
+    }
+    lastTick = Date.now();
+  }, 100);
+
+  // Periodically POST state back to the server
+  window.postPlaybackState = function() {
+    if (!SESSION.server_url) return;
+    
+    // Sync playhead with active audio if loaded
+    if (_audio && playingIdx !== null) {
+      const tx = TX.find(t => t.idx === playingIdx);
+      if (tx) {
+        window.playhead = tx.exsecs + _audio.currentTime;
+      }
+    }
+
+    const payload = {
+      playing: window.isPlaying,
+      time: window.playhead,
+      duration: SESSION.duration_s,
+      speed: window.playbackSpeed,
+      session_id: SESSION.session_id,
+      file: _audio && playingIdx !== null ? (TX.find(t => t.idx === playingIdx) || {}).file || "" : ""
+    };
+
+    fetch(`${SESSION.server_url}/api/aar/playback/state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn("Failed to POST playback state:", err));
+  };
+
+  // Only establish connections if server_url is defined
+  if (SESSION.server_url) {
+    const sseUrl = `${SESSION.server_url}/api/aar/playback/stream`;
+    console.log("Connecting to AAR playback stream:", sseUrl);
+    const es = new EventSource(sseUrl);
+
+    es.onmessage = function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Received playback control command:", data);
+        
+        if (data.cmd === "play") {
+          if (data.idx !== undefined) {
+            playTx(data.idx);
+          } else {
+            resumePlayback();
+          }
+        } else if (data.cmd === "pause" || data.cmd === "stop") {
+          pausePlayback();
+        } else if (data.cmd === "toggle") {
+          if (window.isPlaying) {
+            pausePlayback();
+          } else {
+            resumePlayback();
+          }
+        } else if (data.cmd === "seek") {
+          seekToSessionTime(parseFloat(data.time));
+        } else if (data.cmd === "speed") {
+          setPlaybackSpeed(parseFloat(data.rate));
+        } else if (data.cmd === "load_session") {
+          window.location.href = `/api/aar/session/${data.session_id}/report`;
+        }
+      } catch (e) {
+        console.error("Error processing playback command:", e);
+      }
+    };
+
+    // Post state every 1 second
+    setInterval(window.postPlaybackState, 1000);
+  }
+})();
+</script>
+</body>
+</html>

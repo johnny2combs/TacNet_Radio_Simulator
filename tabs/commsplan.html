@@ -1,0 +1,218 @@
+<!-- tabs/commsplan.html -->
+<section class="section" id="section-commsplan">
+    <div class="print-only ceoi-header" style="display:none">
+        <div style="text-align:center; font-weight:bold; text-decoration:underline; margin-bottom:10px">RESTRICTED</div>
+        <div style="display:flex; justify-content:space-between; border-bottom:2px solid black; padding-bottom:10px; margin-bottom:20px">
+            <div>
+                <div style="font-size:1.4rem; font-weight:bold">COMMUNICATION ELECTRONIC OPERATING INSTRUCTION</div>
+                <div style="font-size:1rem; opacity:0.8" id="cp-exname-print">EXERCISE: --</div>
+            </div>
+            <div style="text-align:right">
+                <div>DATE: <span id="cp-date-print">--</span></div>
+                <div>COPY NO: 01</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-header no-print" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 24px;">
+        <div>
+            <h1 class="page-title">CEOI / Comms Plan</h1>
+            <p class="page-subtitle">Tactical Communication-Electronics Operating Instructions</p>
+        </div>
+        <div style="display:flex; gap:10px">
+            <button class="btn btn-sm" onclick="cpDownloadJSON()">&#x21D3; Export Plan</button>
+            <button class="btn btn-sm" onclick="document.getElementById('cp-import').click()">&#x21D1; Import Plan</button>
+            <input type="file" id="cp-import" accept=".json" style="display:none" onchange="cpImportJSON(this)">
+            <button class="btn btn-sm amber" onclick="printExport()">&#x1F5A8; Print CEOI</button>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="cp-stats-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:32px">
+        <div class="stat-card" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+            <div class="stat-label" style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Authorized Nets</div>
+            <div class="stat-value" id="cp-stat-nets" style="font-size:24px; font-family:'JetBrains Mono', monospace; color:var(--text-primary);">0</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+            <div class="stat-label" style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Personnel Registered</div>
+            <div class="stat-value" id="cp-stat-personnel" style="font-size:24px; font-family:'JetBrains Mono', monospace; color:var(--text-primary);">0</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+            <div class="stat-label" style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Spectrum Range</div>
+            <div class="stat-value" id="cp-stat-spectrum" style="font-size:18px; font-family:'JetBrains Mono', monospace; color:var(--accent-blue); margin-top:4px;">--</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+            <div class="stat-label" style="font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">COMSEC Posture</div>
+            <div class="stat-value" id="cp-stat-crypto" style="font-size:18px; font-family:'JetBrains Mono', monospace; margin-top:4px;">--</div>
+        </div>
+    </div>
+
+    <div class="tabs no-print" style="margin-bottom:24px">
+        <div class="tab active" data-tab="channel-plan">Section 1 — Channel Plan</div>
+        <div class="tab" data-tab="callsign-register">Section 2 — Callsign Register</div>
+        <div class="tab" data-tab="net-diagram">Net Diagram</div>
+    </div>
+
+    <div class="tabpane active" id="tab-channel-plan">
+        <div class="card no-print" style="background:transparent; border:none; box-shadow:none">
+            <div id="cp-channels" class="cp-grid">
+                <!-- Injected by renderCPChannels -->
+            </div>
+        </div>
+        <!-- Table for print only -->
+        <div class="print-only" id="cp-channels-print"></div>
+    </div>
+
+    <div class="tabpane" id="tab-callsign-register">
+        <div class="card no-print" style="background:transparent; border:none; box-shadow:none">
+            <div id="cp-callsigns" class="cp-grid">
+                <!-- Injected by renderCPCallsigns -->
+            </div>
+        </div>
+        <!-- Table for print only -->
+        <div class="print-only" id="cp-callsigns-print"></div>
+    </div>
+
+    <div class="tabpane" id="tab-net-diagram">
+        <div class="card no-print">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center">
+                <div class="card-title">Net Connectivity & Participation</div>
+                <div class="btn-group">
+                    <button class="btn btn-sm" id="cp-mode-hier" onclick="setCpDiagMode('hierarchical')">Hierarchical</button>
+                    <button class="btn btn-sm" id="cp-mode-matrix" onclick="setCpDiagMode('matrix')">Matrix</button>
+                </div>
+            </div>
+            <div class="card-body" id="cp-diagram-container" style="background:#061006; border-radius:4px; min-height:450px; overflow:visible;">
+                <!-- SVG or Matrix injected here by drawCpDiagram -->
+            </div>
+        </div>
+        <!-- Dedicated container for printed diagram/matrix -->
+        <div id="cp-matrix-print" class="print-only"></div>
+    </div>
+
+    <style>
+        .cp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .cp-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cp-card:hover {
+            border-color: var(--text-muted);
+            background: rgba(255,255,255,0.04);
+        }
+
+        .cp-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .cp-card-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .cp-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cp-card-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .cp-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cp-meta-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .cp-meta-value {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cp-card-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cp-badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .cp-member-count {
+            font-size: 10px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cp-member-count span {
+            color: var(--gn);
+            font-weight: 700;
+        }
+
+        .print-only { display: none !important; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            .ceoi-header { color: black !important; border-bottom: 2px solid black !important; }
+        }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof refreshCommsPlan === 'function') refreshCommsPlan();
+            if (typeof drawCpDiagram === 'function') setTimeout(() => drawCpDiagram(), 100);
+            
+            const section = document.getElementById('section-commsplan');
+            section.querySelectorAll('.tab').forEach(t => {
+                t.onclick = () => {
+                    section.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                    section.querySelectorAll('.tabpane').forEach(x => x.classList.remove('active'));
+                    t.classList.add('active');
+                    section.querySelector('#tab-' + t.dataset.tab).classList.add('active');
+                    if (t.dataset.tab === 'net-diagram') setTimeout(() => drawCpDiagram(), 10);
+                };
+            });
+        })();
+    </script>
+</section>

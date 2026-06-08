@@ -1,0 +1,25 @@
+# MilRadio — Python Dependencies
+# Install:  pip install -r requirements.txt
+#
+# Windows audio note:
+#   pip install pyaudio   may fail without PortAudio.
+#   Use instead:  pip install pipwin && pipwin install pyaudio
+#   Or download pre-built wheel from https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+
+# Core (required)
+numpy>=1.24.0
+scipy>=1.10.0
+cryptography>=41.0.0
+mgrs>=1.4.6
+
+# Audio I/O (required for voice; gracefully degrades if absent)
+pyaudio>=0.2.14
+
+# Opus codec (optional; falls back to μ-law G.711 if absent)
+# opuslib>=3.0.1   # requires libopus.dll on Windows
+
+# PTT hotkeys (optional; GUI button / Space key still works without)
+pynput>=1.7.6
+
+# For packaging (BUILD.bat)
+pyinstaller>=6.0.0

@@ -1,0 +1,33 @@
+<!-- tabs/log.html -->
+<section class="section" id="section-log">
+    <div class="page-header">
+        <h1 class="page-title">Server Log</h1>
+        <p class="page-subtitle">Real-time server activity and events</p>
+    </div>
+    <div class="card-actions" style="margin-bottom:24px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"
+                id="log-auto" checked> Auto-Scroll</label>
+        <select class="form-select" id="log-filter" style="width:auto" onchange="renderLog()">
+            <option value="">All</option>
+            <option value="INFO">Info</option>
+            <option value="WARNING">Warning</option>
+            <option value="ERROR">Error</option>
+            <option value="DEBUG">Debug</option>
+        </select>
+        <button class="btn btn-sm" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="log-console" id="full-log">
+                <div class="ll"><span class="ll-ts">[--:--:--]</span><span
+                        class="ll-lv INFO">INFO</span><span class="ll-msg">Server
+                        initializing&#x2026;</span></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (async () => {
+            if (typeof refreshLog === 'function') refreshLog();
+        })();
+    </script>
+</section>

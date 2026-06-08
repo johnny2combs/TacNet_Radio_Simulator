@@ -1,0 +1,186 @@
+<!-- tabs/nodes.html -->
+<section class="section" id="section-nodes">
+    <style>
+        .node-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+        }
+        .node-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .node-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            border-color: var(--accent-blue);
+            box-shadow: 0 12px 40px rgba(0, 184, 212, 0.12);
+        }
+        .node-card-header {
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .node-card-body {
+            padding: 24px;
+            flex: 1;
+        }
+        .node-card-footer {
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+        .node-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            letter-spacing: 0.05em;
+        }
+        .node-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .node-status-pill.online { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .node-status-pill.offline { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        .node-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .node-data-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .node-data-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .node-data-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .node-callsign-display {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+        .node-cs-name {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            letter-spacing: 0.1em;
+            display: block;
+        }
+        .node-cs-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .node-action-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .node-mode-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+        .node-mode-badge.managed {
+            background: rgba(0, 184, 212, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(0, 184, 212, 0.3);
+        }
+        .node-mode-badge.adopted {
+            background: rgba(124, 77, 255, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            animation: pulse-purple 2s infinite;
+        }
+        @keyframes pulse-purple {
+            0% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(124, 77, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0); }
+        }
+    </style>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Remote Node Intelligence</h1>
+            <p class="page-subtitle">Real-time telemetry and fleet management for distributed mesh clients</p>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <button class="btn amber btn-sm" onclick="refreshNodes()" style="padding: 8px 16px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px; height:14px; margin-right:8px; vertical-align:middle;"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                REFRESH NODES
+            </button>
+            <div class="help-trigger" onclick="showQuickHelp('nodes')">
+                <span>❓</span> Help
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Telemetry -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 32px;">
+        <div class="stat-card">
+            <div class="stat-label">FLEET CAPACITY</div>
+            <div class="stat-value" id="stats-nodes-total">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">HOSTS DISCOVERED</div>
+            <div class="stat-value" style="color: var(--accent-green)" id="stats-nodes-online">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">OPERATIONAL SESSIONS</div>
+            <div class="stat-value" style="color: var(--accent-blue)" id="stats-nodes-active">0</div>
+        </div>
+    </div>
+
+    <div id="nodes-grid" class="node-grid">
+        <!-- Dynamically Populated -->
+        <div class="empty-state" style="grid-column: 1/-1; padding: 60px;">
+            <div style="font-size: 2rem; margin-bottom: 16px; opacity: 0.5;">📡</div>
+            <h3>Scanning for Remote Nodes...</h3>
+            <p>Ensure client workstations are running the radio launcher service.</p>
+        </div>
+    </div>
+
+    <script>
+        (async () => {
+            if (typeof refreshNodes === 'function') refreshNodes();
+        })();
+    </script>
+</section>

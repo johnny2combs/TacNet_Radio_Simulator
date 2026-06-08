@@ -1,0 +1,840 @@
+<!-- tabs/topology.html -->
+<section class="section" id="section-topology">
+    <style>
+        #section-topology {
+            padding-top: 0;
+            height: calc(100vh - 80px);
+            flex-direction: column;
+            display: none;
+        }
+
+        #section-topology.active {
+            display: flex;
+        }
+
+        .topo-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            grid-template-rows: 1fr 240px;
+            gap: 20px;
+            flex: 1;
+            padding: 20px;
+            min-height: 0; /* Important for grid nested in flex */
+        }
+
+        /* Graph Area */
+        .topo-graph-container {
+            grid-column: 1;
+            grid-row: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+        }
+
+        #topo-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Top HUD Stats */
+        .topo-hud-top {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .topo-hud-item {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+        }
+
+        .topo-hud-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .topo-hud-value {
+            font-size: 1.1rem;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Side Panel: Selected Node */
+        .topo-sidebar {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topo-sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .topo-sidebar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
+        }
+
+        .detail-label { color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .detail-value { color: var(--text-primary); font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+
+        /* Bottom Area */
+        .topo-bottom-left {
+            grid-column: 1;
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: 240px 1fr 340px;
+            gap: 20px;
+        }
+
+        .topo-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topo-panel-header {
+            padding: 10px 16px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .topo-panel-body {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+        }
+
+        /* Traffic Activity Timeline */
+        .traffic-track {
+            display: flex;
+            align-items: center;
+            height: 20px;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .track-label { width: 60px; font-weight: 800; color: var(--text-muted); font-size: 0.65rem; }
+        .track-bar { 
+            flex: 1; 
+            height: 6px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 3px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .track-pulse {
+            position: absolute;
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: 3px;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        /* Event Log */
+        .event-item {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            display: flex;
+            gap: 8px;
+        }
+        .ev-time { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; min-width: 65px; }
+        .ev-msg { color: var(--text-primary); }
+
+        /* Link Legend */
+        .legend-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .leg-item { display: flex; align-items: center; gap: 12px; }
+        .leg-line { width: 40px; height: 2px; position: relative; }
+        .leg-line.strong { background: var(--accent-green); box-shadow: 0 0 5px var(--accent-green); }
+        .leg-line.medium { background: var(--accent-amber); }
+        .leg-line.weak { background: var(--accent-red); border: 1px dashed var(--accent-red); height: 0; }
+        .leg-line.idle { background: var(--text-muted); opacity: 0.3; }
+
+        .leg-icon {
+            width: 14px; height: 14px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent-green);
+        }
+
+        /* Animations */
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); opacity: 1; }
+            80%, 100% { opacity: 0; }
+        }
+        
+        .pulse-active {
+            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+    </style>
+
+    <div class="topo-layout">
+        <!-- Main Topology Graph -->
+        <div class="topo-graph-container">
+            <canvas id="topo-canvas"></canvas>
+            
+            <div class="topo-hud-top">
+                <div class="topo-hud-item">
+                    <span class="topo-hud-label">Network Health</span>
+                    <span class="topo-hud-value" id="topo-health" style="color:var(--accent-green)">GOOD</span>
+                </div>
+                <div class="topo-hud-item">
+                    <span class="topo-hud-label">Active Nodes</span>
+                    <span class="topo-hud-value" id="topo-node-count">0 / 0</span>
+                </div>
+                <div class="topo-hud-item">
+                    <span class="topo-hud-label">Active Links</span>
+                    <span class="topo-hud-value" id="topo-link-count">0</span>
+                </div>
+                <div class="topo-hud-item">
+                    <span class="topo-hud-label">Network Load</span>
+                    <span class="topo-hud-value" id="topo-load">0%</span>
+                </div>
+            </div>
+
+            <!-- Context Tools -->
+            <div style="position:absolute; top:20px; right:20px; display:flex; gap:8px;">
+                <button class="btn btn-sm" onclick="topoResetZoom()">RESET VIEW</button>
+                <button class="btn btn-sm" onclick="showQuickHelp('topology')">VIEW OPTIONS</button>
+            </div>
+        </div>
+
+        <!-- Right Side: Node Details -->
+        <div class="topo-sidebar">
+            <div class="topo-sidebar-header">
+                <div class="hud-title" style="margin-bottom:4px;">Selected Node</div>
+                <h2 id="sel-node-name" style="margin:0; font-size:1.4rem; color:var(--accent-amber);">SELECT A NODE</h2>
+                <div id="sel-node-status-badge" class="badge" style="margin-top:8px;">OFFLINE</div>
+            </div>
+            <div class="topo-sidebar-body">
+                <div class="dash-controls" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+                    <div class="dash-stats" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <span class="dash-stat" style="font-size: 0.7rem; color: var(--text-muted);"><b id="topo-count-clients" style="color: var(--accent-blue);">0</b> Clients</span>
+                        <span class="dash-stat" style="font-size: 0.7rem; color: var(--text-muted);"><b id="topo-count-infra" style="color: var(--accent-amber);">0</b> Nodes</span>
+                    </div>
+                    <div class="btn-group" style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm" onclick="topoFitAll()" style="flex: 1;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h6v6M9 21H3v-6M21 15v6h-6M3 9V3h6" />
+                            </svg>
+                            Fit View
+                        </button>
+                        <button class="btn btn-sm" onclick="topoResetZoom()" style="flex: 1;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sel-node-details">
+                    <div style="padding:40px; text-align:center; opacity:0.2;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:64px; height:64px; margin-bottom:16px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        <p>Click a node on the map to view detailed telemetry</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Link Status Mini-Panel -->
+            <div style="padding:20px; border-top:1px solid var(--border-color); background:rgba(0,0,0,0.2);">
+                <div class="hud-title" style="margin-bottom:12px;">Link Status</div>
+                <div id="sel-node-links" style="max-height: 180px; overflow-y: auto;">
+                    <!-- Rendered Links -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls & Logs -->
+        <div class="topo-bottom-left">
+            <!-- Link Legend -->
+            <div class="topo-panel">
+                <div class="topo-panel-header">Link Legend</div>
+                <div class="topo-panel-body">
+                    <div class="legend-grid">
+                        <div class="leg-item"><div class="leg-line strong"></div> <span>STRONG LINK</span></div>
+                        <div class="leg-item"><div class="leg-line medium"></div> <span>MEDIUM LINK</span></div>
+                        <div class="leg-item"><div class="leg-line weak"></div> <span>WEAK / FAIL</span></div>
+                        <div style="height:1px; background:rgba(255,255,255,0.05); margin:8px 0;"></div>
+                        <div class="leg-item"><div class="leg-line" style="background:var(--accent-amber); box-shadow:0 0 8px var(--accent-amber);"></div> <span>RETRANS LINK</span></div>
+                        <div class="leg-item"><div class="leg-line" style="background:var(--accent-purple); box-shadow:0 0 8px var(--accent-purple);"></div> <span>SATCOM LINK</span></div>
+                        <div class="leg-item"><div class="leg-line" style="border:1px dashed var(--accent-blue); height:0;"></div> <span>MONITOR LINK</span></div>
+                        <div style="height:1px; background:rgba(255,255,255,0.05); margin:8px 0;"></div>
+                        <div class="leg-item"><div class="leg-icon">⚡</div> <span>PTT / VOICE</span></div>
+                        <div class="leg-item"><div class="leg-icon" style="color:var(--accent-blue)">◈</div> <span>DATA TRAFFIC</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traffic Activity -->
+            <div class="topo-panel">
+                <div class="topo-panel-header">Traffic Activity (Last 30 SEC)</div>
+                <div class="topo-panel-body" id="topo-traffic-list">
+                    <!-- Tracks -->
+                </div>
+            </div>
+
+            <!-- Network Events -->
+            <div class="topo-panel">
+                <div class="topo-panel-header">
+                    <span>Network Events</span>
+                    <button class="btn btn-sm" onclick="clearActivity()" style="padding: 0 6px; font-size: 0.6rem;">CLEAR</button>
+                </div>
+                <div class="topo-panel-body" id="topo-event-log">
+                    <!-- Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Local Topology State
+        window.topoState = {
+            nodes: [],
+            links: [],
+            selectedId: null,
+            ctx: null,
+            canvas: null,
+            width: 0,
+            height: 0,
+            zoom: 1.0,
+            offset: { x: 0, y: 0 },
+            isDragging: false,
+            lastMouse: { x: 0, y: 0 },
+            particles: [],
+            lastDataTs: 0
+        };
+
+        function initTopology() {
+            console.log("Initializing Topology Map...");
+            const canvas = document.getElementById('topo-canvas');
+            if (!canvas) return;
+            
+            topoState.canvas = canvas;
+            topoState.ctx = canvas.getContext('2d');
+            
+            window.addEventListener('resize', resizeTopo);
+            resizeTopo();
+
+            // Interaction
+            canvas.addEventListener('mousedown', e => {
+                topoState.isDragging = true;
+                topoState.lastMouse = { x: e.clientX, y: e.clientY };
+                
+                // Hit Test for Nodes
+                const rect = canvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left - topoState.offset.x) / topoState.zoom;
+                const my = (e.clientY - rect.top - topoState.offset.y) / topoState.zoom;
+                
+                let found = null;
+                topoState.nodes.forEach(n => {
+                    const dx = n.worldX - mx;
+                    const dy = n.worldY - my;
+                    if (Math.sqrt(dx*dx + dy*dy) < 30) found = n.id;
+                });
+                
+                if (found) {
+                    topoState.selectedId = found;
+                    updateSelectedNodeUI();
+                } else {
+                    // Start drag
+                }
+            });
+
+            window.addEventListener('mousemove', e => {
+                if (topoState.isDragging) {
+                    topoState.offset.x += (e.clientX - topoState.lastMouse.x);
+                    topoState.offset.y += (e.clientY - topoState.lastMouse.y);
+                    topoState.lastMouse = { x: e.clientX, y: e.clientY };
+                }
+            });
+
+            window.addEventListener('mouseup', () => topoState.isDragging = false);
+
+            canvas.addEventListener('wheel', e => {
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                topoState.zoom *= delta;
+                topoState.zoom = Math.max(0.2, Math.min(5.0, topoState.zoom));
+            }, { passive: true });
+
+            // Start Render Loop
+            requestAnimationFrame(renderTopology);
+        }
+
+        function resizeTopo() {
+            if (!topoState.canvas) return;
+            const container = topoState.canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            
+            topoState.width = container.clientWidth;
+            topoState.height = container.clientHeight;
+            
+            topoState.canvas.width = topoState.width * dpr;
+            topoState.canvas.height = topoState.height * dpr;
+            
+            if (topoState.ctx) {
+                topoState.ctx.scale(dpr, dpr);
+            }
+            
+            // Initial center if not already moved
+            if (topoState.offset.x === 0 && topoState.width > 0) {
+                topoState.offset.x = topoState.width / 2;
+                topoState.offset.y = topoState.height / 2;
+            }
+        }
+
+        function topoFitAll() {
+            if (!topoState.nodes || topoState.nodes.length === 0) return;
+            
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            topoState.nodes.forEach(n => {
+                minX = Math.min(minX, n.worldX);
+                maxX = Math.max(maxX, n.worldX);
+                minY = Math.min(minY, n.worldY);
+                maxY = Math.max(maxY, n.worldY);
+            });
+            
+            const spanX = Math.max(0.001, maxX - minX);
+            const spanY = Math.max(0.001, maxY - minY);
+            
+            // Padding
+            const padding = 100;
+            const availableW = topoState.width - padding * 2;
+            const availableH = topoState.height - padding * 2;
+            
+            const zoomX = availableW / spanX;
+            const zoomY = availableH / spanY;
+            
+            topoState.zoom = Math.min(zoomX, zoomY, 2.0); // Cap zoom at 2.0
+            
+            // Center
+            topoState.offset.x = topoState.width / 2 - ((minX + maxX) / 2) * topoState.zoom;
+            topoState.offset.y = topoState.height / 2 - ((minY + maxY) / 2) * topoState.zoom;
+        }
+
+        function topoResetZoom() {
+            if (!topoState.width) resizeTopo();
+            topoState.zoom = 1.0;
+            topoState.offset = { x: topoState.width / 2, y: topoState.height / 2 };
+        }
+
+        function renderTopology(time) {
+            const ctx = topoState.ctx;
+            if (!ctx || !topoState.width) {
+                requestAnimationFrame(renderTopology);
+                return;
+            }
+
+            // Clear with background color to match container
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, topoState.width, topoState.height);
+            
+            ctx.save();
+            ctx.translate(topoState.offset.x, topoState.offset.y);
+            ctx.scale(topoState.zoom, topoState.zoom);
+
+            // Draw Grid
+            drawTopoGrid(ctx);
+
+            // Draw Links
+            const sortedLinks = [...topoState.links].sort((a, b) => {
+                if (a.logical_type === 'primary' && b.logical_type !== 'primary') return -1;
+                if (a.logical_type !== 'primary' && b.logical_type === 'primary') return 1;
+                return 0;
+            });
+            sortedLinks.forEach(l => drawTopoLink(ctx, l, time));
+
+            // Draw Particles
+            updateAndDrawParticles(ctx, time);
+
+            // Draw Nodes
+            topoState.nodes.forEach(n => drawTopoNode(ctx, n, time));
+
+            ctx.restore();
+            requestAnimationFrame(renderTopology);
+        }
+
+        function drawTopoGrid(ctx) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            const size = 100;
+            const range = 2000;
+            
+            ctx.beginPath();
+            for (let i = -range; i <= range; i += size) {
+                ctx.moveTo(i, -range); ctx.lineTo(i, range);
+                ctx.moveTo(-range, i); ctx.lineTo(range, i);
+            }
+            ctx.stroke();
+
+            // Axes
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            ctx.moveTo(0, -range); ctx.lineTo(0, range);
+            ctx.moveTo(-range, 0); ctx.lineTo(range, 0);
+            ctx.stroke();
+        }
+
+        function drawTopoLink(ctx, l, time) {
+            const n1 = topoState.nodes.find(n => n.id === l.from);
+            const n2 = topoState.nodes.find(n => n.id === l.to);
+            if (!n1 || !n2) return;
+
+            ctx.lineWidth = (l.logical_type === 'monitor') ? 1.5 : 2.5;
+            
+            // Color based on logical/physical type
+            if (l.logical_type === 'monitor') {
+                ctx.strokeStyle = 'rgba(0, 188, 212, 0.8)'; // Cyan/Blue for Monitor
+            } else if (l.physical_type === 'retrans') {
+                ctx.strokeStyle = 'rgba(255, 152, 0, 0.8)'; // Amber/Orange
+            } else if (l.physical_type === 'satcom') {
+                ctx.strokeStyle = 'rgba(124, 77, 255, 0.8)'; // Purple for SATCOM
+            } else {
+                // Direct: color by signal strength
+                if (l.status === 'STRONG') {
+                    ctx.strokeStyle = 'rgba(0, 230, 118, 0.45)';
+                } else if (l.status === 'MEDIUM') {
+                    ctx.strokeStyle = 'rgba(255, 193, 7, 0.45)';
+                } else {
+                    ctx.strokeStyle = 'rgba(255, 82, 82, 0.45)';
+                }
+            }
+
+            // Dash pattern based on logical type and status
+            if (l.logical_type === 'monitor') {
+                ctx.setLineDash([4, 4]);
+            } else if (l.physical_type === 'retrans' || l.physical_type === 'satcom') {
+                ctx.setLineDash([15, 8]);
+            } else if (l.status === 'MEDIUM') {
+                ctx.setLineDash([10, 5]);
+            } else if (l.status === 'WEAK') {
+                ctx.setLineDash([2, 8]);
+            } else {
+                ctx.setLineDash([]);
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(n1.worldX, n1.worldY);
+            ctx.lineTo(n2.worldX, n2.worldY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Packet flow if active
+            if (l.traffic && Math.random() < 0.1) {
+                spawnParticle(n1, n2, l.from === l.tx_active_node ? 1 : -1);
+            }
+        }
+
+        function spawnParticle(n1, n2, dir) {
+            topoState.particles.push({
+                x1: n1.worldX, y1: n1.worldY,
+                x2: n2.worldX, y2: n2.worldY,
+                t: 0,
+                speed: 0.02 + Math.random() * 0.02,
+                color: 'rgba(0, 230, 118, 0.8)'
+            });
+        }
+
+        function updateAndDrawParticles(ctx, time) {
+            topoState.particles = topoState.particles.filter(p => {
+                p.t += p.speed;
+                if (p.t >= 1) return false;
+
+                const x = p.x1 + (p.x2 - p.x1) * p.t;
+                const y = p.y1 + (p.y2 - p.y1) * p.t;
+
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                return true;
+            });
+        }
+
+        function drawTopoNode(ctx, n, time) {
+            const isSelected = topoState.selectedId === n.id;
+            const x = n.worldX;
+            const y = n.worldY;
+
+            // Base glow
+            if (n.state === 'TX') {
+                const r = 40 + Math.sin(time / 100) * 10;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, 'rgba(0, 230, 118, 0.4)');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+            }
+
+            // Hexagon container
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Selection highlight
+            if (isSelected) {
+                ctx.strokeStyle = 'var(--accent-amber)';
+                ctx.lineWidth = 3;
+                drawHex(ctx, 34);
+            }
+
+            // Main box
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+            ctx.strokeStyle = n.state === 'TX' ? 'var(--accent-green)' : n.state === 'RX' ? 'var(--accent-blue)' : 'var(--border-color)';
+            ctx.lineWidth = 2;
+            
+            drawHex(ctx, 30);
+            ctx.fill();
+            ctx.stroke();
+
+            // Callsign
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(n.callsign, 0, 4);
+
+            // Channel label below
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '8px JetBrains Mono';
+            ctx.fillText(n.channel_name, 0, 18);
+
+            // Icon above
+            ctx.fillStyle = n.state === 'TX' ? 'var(--accent-green)' : 'rgba(255,255,255,0.2)';
+            ctx.font = '12px serif';
+            ctx.fillText('📡', 0, -14);
+
+            ctx.restore();
+        }
+
+        function drawHex(ctx, r) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i - Math.PI / 6;
+                const px = r * Math.cos(angle);
+                const py = r * Math.sin(angle);
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+        }
+
+        // Data Update
+        function updateTopologyData(data) {
+            if (!data || !data.nodes || data.nodes.length === 0) {
+                topoState.nodes = [];
+                topoState.links = [];
+                setTxt('topo-node-count', '0 / 0');
+                setTxt('topo-link-count', '0');
+                return;
+            }
+            
+            const scale = 5000; // base coordinate scale
+            
+            const prevCount = topoState.nodes.length;
+            const currentCount = data.nodes.length;
+            const firstLoad = prevCount === 0;
+            const significantChange = prevCount > 0 && (Math.abs(currentCount - prevCount) / prevCount > 0.1);
+
+            topoState.nodes = data.nodes.map(n => ({
+                ...n,
+                worldX: (n.lon - data.nodes[0].lon) * scale,
+                worldY: -(n.lat - data.nodes[0].lat) * scale
+            }));
+
+            topoState.links = data.links;
+            
+            // Update HUD
+            setTxt('topo-node-count', `${data.nodes.length} / ${data.nodes.length}`);
+            setTxt('topo-link-count', data.links.filter(l => l.status !== 'FAIL').length);
+            setTxt('topo-load', (data.stats.load_pct || 0) + '%');
+            
+            // Node counters in sidebar
+            const clientCount = data.nodes.filter(n => n.type === 'client').length;
+            const infraCount = data.nodes.filter(n => n.type === 'retrans').length;
+            setTxt('topo-count-clients', clientCount);
+            setTxt('topo-count-infra', infraCount);
+
+            if (firstLoad || significantChange) {
+                console.log("Significant topology change detected. Auto-fitting view.");
+                topoFitAll();
+            }
+            
+            if (topoState.selectedId) updateSelectedNodeUI();
+            updateTrafficUI(data.nodes);
+        }
+
+        function updateSelectedNodeUI() {
+            const node = topoState.nodes.find(n => n.id === topoState.selectedId);
+            if (!node) return;
+
+            setTxt('sel-node-name', node.callsign);
+            const badge = document.getElementById('sel-node-status-badge');
+            badge.textContent = node.state;
+            badge.className = 'badge ' + (node.state === 'TX' ? 'ok' : node.state === 'RX' ? 'info' : 'warn');
+
+            const body = document.getElementById('sel-node-details');
+            body.innerHTML = `
+                <div class="detail-row"><span class="detail-label">Real Name</span><span class="detail-value">${esc(node.name)}</span></div>
+                <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value">${node.state}</span></div>
+                <div class="detail-row"><span class="detail-label">Channel</span><span class="detail-value">${node.channel_name}</span></div>
+                <div class="detail-row"><span class="detail-label">Freq</span><span class="detail-value">${node.freq} MHz</span></div>
+                <div class="detail-row"><span class="detail-label">MGRS</span><span class="detail-value">${node.mgrs}</span></div>
+                <div class="detail-row"><span class="detail-label">Profile</span><span class="detail-value">${(node.profile || 'unknown').toUpperCase()}</span></div>
+                <div class="detail-row" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                    <span class="detail-label">Encryption</span><span class="detail-value" style="color:var(--accent-green)">AES-256</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Last Seen</span><span class="detail-value">${new Date(node.last_seen * 1000).toLocaleTimeString()}</span>
+                </div>
+            `;
+
+            // Neighbors
+            const links = topoState.links.filter(l => l.from === node.id || l.to === node.id);
+            const linkList = document.getElementById('sel-node-links');
+            linkList.innerHTML = links.map(l => {
+                const target = l.from === node.id ? l.to : l.from;
+                let color = 'var(--text-muted)';
+                if (l.physical_type === 'satcom') color = 'var(--accent-purple)';
+                else if (l.physical_type === 'retrans') color = 'var(--accent-amber)';
+                else if (l.logical_type === 'monitor') color = 'var(--accent-blue)';
+                else if (l.status === 'STRONG') color = 'var(--accent-green)';
+                else if (l.status === 'MEDIUM') color = 'var(--accent-amber)';
+                else color = 'var(--accent-red)';
+
+                const typeLabel = `${(l.logical_type || 'unknown').toUpperCase()} / ${(l.physical_type || 'unknown').toUpperCase()}`;
+                
+                return `
+                    <div style="margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem;">
+                            <span style="font-weight:800;">${node.callsign} ↔ ${target}</span>
+                            <span style="color:${color}; font-weight:800; font-family:mono;">${l.status}</span>
+                        </div>
+                        <div style="font-size:0.6rem; color:var(--text-muted); margin-top:2px; font-weight:600;">
+                            TYPE: <span style="color:white">${typeLabel}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div style="opacity:0.3; font-size:0.7rem;">No active links in range</div>';
+        }
+
+        function updateTrafficUI(nodes) {
+            const container = document.getElementById('topo-traffic-list');
+            if (!container) return;
+            
+            // Limit to 8 nodes in activity view
+            const displayNodes = nodes.slice(0, 8);
+            
+            container.innerHTML = displayNodes.map(n => `
+                <div class="traffic-track">
+                    <div class="track-label">${n.callsign}</div>
+                    <div class="track-bar">
+                        ${n.state === 'TX' ? '<div class="track-pulse" style="width:100%"></div>' : 
+                          n.state === 'RX' ? '<div class="track-pulse" style="width:100%; background:var(--accent-blue); box-shadow:0 0 8px var(--accent-blue)"></div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Polling loop
+        async function refreshTopology() {
+            try {
+                const resp = await fetch('/api/topology');
+                const data = await resp.json();
+                updateTopologyData(data);
+                
+                // Also update event log from main activity ring if available
+                const evResp = await fetch('/api/activity');
+                const evData = await evResp.json();
+                const log = document.getElementById('topo-event-log');
+                if (log && evData.lines) {
+                    log.innerHTML = evData.lines.slice(-10).reverse().map(l => `
+                        <div class="event-item">
+                            <span class="ev-time">${l.time}</span>
+                            <span class="ev-msg" style="color:${l.kind==='ptt'?'var(--accent-green)':l.kind==='join'?'var(--accent-blue)':'white'}">${esc(l.msg)}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error("Topology poll failed", e);
+            }
+        }
+
+        // Lifecycle
+        (function() {
+            // Wait for section to be visible and have dimensions before init
+            let attempts = 0;
+            const checkVisible = setInterval(() => {
+                const sec = document.getElementById('section-topology');
+                // Ensure section is active and has dimensions
+                if (sec && sec.classList.contains('active') && sec.offsetWidth > 0) {
+                    clearInterval(checkVisible);
+                    initTopology();
+                    
+                    // Periodic data refresh
+                    const pollInterval = setInterval(() => {
+                        // Stop polling if section is no longer active
+                        if (!sec.classList.contains('active')) {
+                            // We don't clear the interval, we just skip execution
+                            // because if they switch back, it should resume.
+                            // Actually, better to just let it run if it's cheap.
+                            return;
+                        }
+                        refreshTopology();
+                    }, 2000);
+                    
+                    refreshTopology();
+                }
+                if (attempts++ > 100) clearInterval(checkVisible); 
+            }, 500);
+        })();
+    </script>
+</section>

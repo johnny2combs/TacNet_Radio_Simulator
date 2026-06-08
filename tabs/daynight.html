@@ -1,0 +1,283 @@
+<!-- tabs/daynight.html -->
+<section class="section" id="section-daynight">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Diurnal & EMI Modeling</h1>
+            <p class="page-subtitle">Synchronizing solar propagation cycles and ambient electromagnetic noise</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('daynight')">
+            <span>❓</span> Help
+        </div>
+    </div>
+
+    <!-- Solar Telemetry Row -->
+    <div class="dnc-stats-row">
+        <div class="card stat-card-compact">
+            <div class="stat-header">WALL CLOCK</div>
+            <div class="stat-value mono" id="dnc-wallclock">12:00L</div>
+            <div class="stat-meta">Server Local Time</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">SUN FACTOR</div>
+            <div class="stat-value mono" id="dnc-sun-factor">0.00</div>
+            <div class="stat-meta">Solar Intensity</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">SIGNAL CLARITY</div>
+            <div class="stat-value mono" id="dnc-clarity" style="color:var(--accent-green)">100%</div>
+            <div class="stat-meta">Atmospheric Loss</div>
+        </div>
+        <div class="stat-card-compact card">
+            <div class="stat-header">AMBIENT NOISE</div>
+            <div class="stat-value mono" id="dnc-noise-floor" style="color:var(--accent-amber)">-105dB</div>
+            <div class="stat-meta">Broadband Floor</div>
+        </div>
+    </div>
+
+    <div class="dnc-main-grid">
+        <!-- Left: Diurnal Engine -->
+        <div class="dnc-col-primary">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        Diurnal Cycle Engine
+                    </div>
+                    <div class="toggle" id="dnc-toggle" onclick="dncSetEnabled(!DNC.enabled)">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="routing-modes-grid">
+                        <div class="mode-mini-card" id="dnc-manual-btn" onclick="dncSetAuto(false)">
+                            <div class="mode-mini-name">MANUAL OVERRIDE</div>
+                            <div class="mode-mini-desc">Fixed solar position</div>
+                        </div>
+                        <div class="mode-mini-card" id="dnc-auto-btn" onclick="dncSetAuto(true)">
+                            <div class="mode-mini-name">WALL CLOCK SYNC</div>
+                            <div class="mode-mini-desc">Real-world tracking</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px">
+                        <div class="phase-display">
+                            <div class="phase-label">CURRENT PHASE</div>
+                            <div class="phase-value mono" id="dnc-phase">SOLAR NOON</div>
+                            <div class="phase-desc" id="dnc-phase-desc">Peak clarity, minimal D-layer absorption</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px" id="dnc-hour-ctrl">
+                        <div class="slider-header">
+                            <label class="form-label">Simulated Hour</label>
+                            <span class="mono slider-readout" id="sv-dnc-hour">12:00</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-dnc-hour" min="0" max="23.9" step="0.1" oninput="dncHourUpdate()">
+                        
+                        <div id="dnc-time-preview" class="solar-bar">
+                            <div id="dnc-time-marker" class="solar-marker"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Environmental Presets -->
+            <div class="card">
+                <div class="card-header"><div class="card-title">Environment Profiles</div></div>
+                <div class="card-body">
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="emiApplyPreset('tactical')">
+                            <div class="preset-icon">🛡️</div>
+                            <div class="preset-text">
+                                <div class="preset-name">TACTICAL</div>
+                                <div class="preset-desc">Clean RF floor</div>
+                            </div>
+                        </button>
+                        <button class="preset-btn" onclick="emiApplyPreset('urban')">
+                            <div class="preset-icon">🏙️</div>
+                            <div class="preset-text">
+                                <div class="preset-name">URBAN</div>
+                                <div class="preset-desc">60Hz Hum / EMI</div>
+                            </div>
+                        </button>
+                        <button class="preset-btn" onclick="emiApplyPreset('industrial')">
+                            <div class="preset-icon">🏭</div>
+                            <div class="preset-text">
+                                <div class="preset-name">INDUSTRIAL</div>
+                                <div class="preset-desc">High spectral noise</div>
+                            </div>
+                        </button>
+                        <button class="preset-btn danger" onclick="emiApplyPreset('blackout')">
+                            <div class="preset-icon">⚡</div>
+                            <div class="preset-text">
+                                <div class="preset-name">BLACKOUT</div>
+                                <div class="preset-desc">Total interference</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: EMI Dynamics -->
+        <div class="dnc-col-visual">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Electromagnetic Interference (EMI)
+                    </div>
+                    <div class="toggle" id="emi-toggle" onclick="emiSetEnabled(!EMI.enabled)">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="routing-modes-grid" style="grid-template-columns: 1fr 1fr 1fr">
+                        <div class="mode-mini-card" id="emi-white" onclick="emiSetType('white')">
+                            <div class="mode-mini-name">WHITE</div>
+                            <div class="mode-mini-desc">Wideband</div>
+                        </div>
+                        <div class="mode-mini-card" id="emi-hum" onclick="emiSetType('hum')">
+                            <div class="mode-mini-name">HUM</div>
+                            <div class="mode-mini-desc">60Hz Loop</div>
+                        </div>
+                        <div class="mode-mini-card" id="emi-burst" onclick="emiSetType('burst')">
+                            <div class="mode-mini-name">BURSTS</div>
+                            <div class="mode-mini-desc">Impulse</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px">
+                        <div class="slider-header">
+                            <label class="form-label">Global Interference Intensity</label>
+                            <span class="mono slider-readout" id="sv-emi-level" style="color:var(--accent-amber)">0.02</span>
+                        </div>
+                        <input type="range" class="range-slider" id="sl-emi-level" min="0" max="1" step="0.01" oninput="emiLevelUpdate()">
+                    </div>
+
+                    <div style="margin-top:24px; padding:16px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid var(--border-color)">
+                        <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:8px">NOISE TYPE INTELLIGENCE</div>
+                        <div id="emi-type-desc" style="font-size:11px; color:var(--text-secondary); line-height:1.4">Select an EMI source to view technical characteristics.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Apply Changes -->
+            <div class="card" style="background: rgba(0, 230, 118, 0.05); border-color: rgba(0, 230, 118, 0.2);">
+                <div class="card-body" style="display:flex; gap:12px; align-items:center">
+                    <div style="flex:1">
+                        <div style="font-size:11px; font-weight:800; color:var(--accent-green)">SYNCHRONIZE SIMULATION</div>
+                        <div style="font-size:10px; color:var(--text-muted)">Commit cycle parameters to active RF environment</div>
+                    </div>
+                    <button class="btn btn-sm" onclick="dncLoad()">Reload</button>
+                    <button class="btn btn-sm" style="background:var(--accent-green); color:#000" onclick="dncSave()">Commit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .dnc-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .dnc-main-grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 20px;
+        }
+
+        .routing-modes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .mode-mini-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-mini-card:hover { border-color: rgba(255,255,255,0.2); }
+        .mode-mini-card.active-amber { border-color: var(--accent-amber); background: rgba(255, 171, 64, 0.1); }
+        .mode-mini-card.active-blue { border-color: var(--accent-blue); background: rgba(0, 184, 212, 0.1); }
+
+        .mode-mini-name { font-size: 10px; font-weight: 800; color: var(--text-primary); }
+        .mode-mini-desc { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+        .phase-display {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .phase-label { font-size: 9px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 4px; }
+        .phase-value { font-size: 18px; font-weight: 800; color: var(--accent-amber); }
+        .phase-desc { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+        .solar-bar {
+            margin-top: 10px;
+            height: 32px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #050510 0%, #101030 20%, #4466aa 40%, #88aabb 50%, #4466aa 60%, #101030 80%, #050510 100%);
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .solar-marker {
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            width: 2px;
+            background: white;
+            box-shadow: 0 0 10px white;
+            left: 50%;
+            z-index: 2;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .preset-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .preset-btn:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+        .preset-btn.danger:hover { border-color: var(--accent-red); background: rgba(255, 82, 82, 0.1); }
+
+        .preset-icon { font-size: 18px; }
+        .preset-name { font-size: 10px; font-weight: 800; }
+        .preset-desc { font-size: 9px; color: var(--text-muted); }
+
+        .slider-readout { font-size: 11px; font-weight: 700; }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof dncLoad === 'function') await dncLoad();
+            if (typeof dncPollWallClock === 'function') await dncPollWallClock();
+        })();
+    </script>
+</section>

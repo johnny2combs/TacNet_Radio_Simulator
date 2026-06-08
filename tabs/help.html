@@ -1,0 +1,221 @@
+<!-- tabs/help.html -->
+<section class="section" id="section-help">
+    <div class="page-header">
+        <h1 class="page-title">User Manual & System Guide</h1>
+        <p class="page-subtitle">Comprehensive guide to configuring, operating, and managing the TacNet simulation suite</p>
+    </div>
+
+    <div class="card help-content" style="max-width:1200px; line-height:1.6; font-size:14px; padding:32px;">
+        <div style="display:grid; grid-template-columns: 3fr 1fr; gap:40px">
+            <div>
+                <!-- 0. Before You Begin -->
+                <h2 style="color:var(--accent-blue); margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">0. Before You Begin 🟢</h2>
+                <p>TacNet requires three separate executables working together. Ensure your environment meets these minimums:</p>
+                <ul>
+                    <li><strong>OS:</strong> Windows 10/11 (64-bit) or Linux (Wine/Proton compatible)</li>
+                    <li><strong>Network:</strong> Open <code>5000 TCP</code> & <code>5005 UDP</code> on your firewall/router</li>
+                    <li><strong>Audio:</strong> Functional microphone & headset (Push-To-Talk requires a working input device)</li>
+                </ul>
+                <details style="margin-bottom:24px; border:1px solid var(--border-color); border-radius:8px; padding:12px;">
+                    <summary style="cursor:pointer; font-weight:600; color:var(--text-primary);">📦 Installation Order & First Run</summary>
+                    <ol style="margin:12px 0 0 18px; font-size:13px;">
+                        <li>Install <strong>TacNet-Server.exe</strong> first. Run it as Administrator.</li>
+                        <li>Install <strong>TacNet-Client.exe</strong> on all operator machines.</li>
+                        <li>Place <strong>TacNet-Launcher.exe</strong> in a shared folder or distribute via Discord/email.</li>
+                        <li>On first launch, allow Windows Defender / AV exceptions if prompted.</li>
+                    </ol>
+                </details>
+
+                <!-- 1. System Architecture -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">1. System Architecture</h2>
+                <p>TacNet is a decentralized client-server tactical radio simulation designed to replicate real-world RF (Radio Frequency) physics, environmental effects, and military hardware limitations.</p>
+                <ul>
+                    <li><strong>The Server:</strong> This acts as the "world engine." It does not transmit audio itself, but rather computes the physics (terrain occlusion, distance, weather, electronic warfare) and routes audio packets between clients.</li>
+                    <li><strong>The Client:</strong> The interface used by the actual operators. It captures microphone input and plays back incoming audio based on the server's physics calculations.</li>
+                    <li><strong>The Launcher:</strong> A lightweight utility that allows operators to easily connect their client to your server IP address.</li>
+                </ul>
+
+                <!-- 2. Getting Started -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">2. Getting Started: First Simulation 🚀</h2>
+                <p>Follow these steps exactly in order. A misstep here is the #1 cause of "I can't connect" issues.</p>
+                <ol style="padding-left:20px; margin-bottom: 24px;">
+                    <li style="margin-bottom:12px;"><strong>Create a Hardware Profile</strong>
+                        <ul style="margin-top:4px; font-size:13px;">
+                            <li>Open Server → <em>Profiles</em> tab → Click <code>+ New Profile</code></li>
+                            <li>Name it clearly (e.g., <code>PRC-152_Handheld</code>)</li>
+                            <li>Set <em>Freq Range</em> (e.g., <code>30-512 MHz</code>), <em>Tx Power</em> (<code>5W</code>), <em>Sensitivity</em> (<code>-110 dBm</code>)</li>
+                            <li>✅ <strong>Tip:</strong> Click <code>Test Range</code> to verify coverage before saving.</li>
+                        </ul>
+                    </li>
+                    <li style="margin-bottom:12px;"><strong>Define Your Comms Plan</strong>
+                        <ul style="margin-top:4px; font-size:13px;">
+                            <li>Go to <em>Comms Plan</em> tab → <code>+ New Channel</code></li>
+                            <li>Name: <code>Command Net</code> | Freq: <code>45.500 MHz</code> | Mode: <code>FM</code></li>
+                        </ul>
+                    </li>
+                    <li style="margin-bottom:12px;"><strong>Register Callsigns</strong>
+                        <ul style="margin-top:4px; font-size:13px;">
+                            <li>Go to <em>Callsigns</em> tab → <code>+ New Callsign</code></li>
+                            <li>Enter exact name (e.g., <code>ALPHA</code>) → Assign profile → Check <code>Command Net</code></li>
+                            <li>⚠️ <strong>Warning:</strong> Callsigns are <strong>case-sensitive</strong>.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Connect Clients</strong>
+                        <ul style="margin-top:4px; font-size:13px;">
+                            <li>Operators run <code>TacNet-Launcher.exe</code>, enter IP and Callsign, then click <code>Connect</code>.</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <!-- 3. Troubleshooting -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">3. Quick Troubleshooting 🔧</h2>
+                <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:24px; border:1px solid var(--border-color);">
+                    <thead style="background:var(--bg-tertiary);">
+                        <tr>
+                            <th style="border:1px solid var(--border-color); padding:10px; text-align:left;">Symptom</th>
+                            <th style="border:1px solid var(--border-color); padding:10px; text-align:left;">Likely Cause</th>
+                            <th style="border:1px solid var(--border-color); padding:10px; text-align:left;">Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border:1px solid var(--border-color); padding:10px;">"Callsign not found"</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Typo or case mismatch</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Verify spelling in <em>Callsigns</em> tab.</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Audio cuts out / static</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Terrain block</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Check <em>Signal Quality</em>. Deploy a RETRA node.</td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid var(--border-color); padding:10px;">"Connection refused"</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Firewall issue</td>
+                            <td style="border:1px solid var(--border-color); padding:10px;">Open ports <code>5000 TCP</code> & <code>5005 UDP</code>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 4. Glossary -->
+                <details style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:24px;">
+                    <summary style="cursor:pointer; font-weight:600; color:var(--accent-blue);">📘 Beginner Glossary</summary>
+                    <ul style="margin-top:12px; font-size:13px; columns:2; column-gap:20px;">
+                        <li><strong>Squelch Floor:</strong> Min signal strength needed for audio.</li>
+                        <li><strong>RETRA:</strong> Retransmission repeater node.</li>
+                        <li><strong>EMCON:</strong> Emission Control (Radio Silence).</li>
+                        <li><strong>H-Hour:</strong> Official mission start time.</li>
+                        <li><strong>Diffraction:</strong> Signal loss from terrain obstacles.</li>
+                    </ul>
+                </details>
+
+                <!-- 5. Advanced Hardware Profiles -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">5. Advanced Hardware Profiles ⚙️</h2>
+                <p>TacNet simulates specific radio hardware. In the <em>Profiles</em> tab, you can edit granular RF parameters:</p>
+                <ul>
+                    <li><strong>Freq Range & Band:</strong> Ensures the radio can tune to the assigned net.</li>
+                    <li><strong>Tx Power (Watts):</strong> Higher wattage pushes through weather and distance.</li>
+                    <li><strong>Modulation Sensitivity (dBm):</strong> Determines the "squelch floor." A lower number (e.g., -120 dBm) is more sensitive.</li>
+                </ul>
+
+                <!-- 6. Tactical Map & Infrastructure -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">6. Tactical Map & Infrastructure</h2>
+                <p>The <em>Tactical Map</em> visualizes unit locations. Distance and terrain block radio signals.</p>
+                <ul>
+                    <li><strong>Moving Units:</strong> Manually drag icons to update positions if GPS is not enabled.</li>
+                    <li><strong>Retransmission Nodes (RETRA):</strong> Deploy nodes on high ground to bridge communications over terrain.</li>
+                </ul>
+
+                <!-- 7. Physics & Environment -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">7. Physics & Environment Engine</h2>
+                <p>TacNet applies real-world physics to every transmission.</p>
+                <ul>
+                    <li><strong>Terrain (Line of Sight):</strong> Uses SRTM elevation tiles to calculate diffraction and occlusion.</li>
+                    <li><strong>Weather Effects:</strong> Rain and storms increase the electromagnetic noise floor.</li>
+                    <li><strong>Day/Night Cycle:</strong> Solar radiation affects D-Layer ionospheric absorption for HF signals.</li>
+                </ul>
+
+                <!-- 8. Electronic Warfare (EW) -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">8. Electronic Warfare (EW) 🛡️</h2>
+                <p>The <em>Electronic Warfare</em> tab allows you to attack the communications network.</p>
+                <ul>
+                    <li><strong>Signal Degradation (EMI):</strong> Injects background static into specific channels.</li>
+                    <li><strong>Area Jamming:</strong> Bombards frequencies with noise, causing packet loss and choppy audio.</li>
+                    <li><strong>EMCON:</strong> Completely suppresses PTT for targeted units.</li>
+                </ul>
+
+                <!-- 9. After-Action Review (AAR) -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">9. After-Action Review (AAR)</h2>
+                <p>Manage exercise recordings and transmission logs.</p>
+                <ul>
+                    <li><strong>Recording:</strong> Logs every transmission with timestamps, callsigns, and signal quality.</li>
+                    <li><strong>H-Hour Sync:</strong> Synchronize the recording timeline to real-world or mission-specific time.</li>
+                </ul>
+
+                <!-- 10. Network Topology Mesh -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">10. Network Topology Mesh 🌐</h2>
+                <p>The <em>Topology</em> tab provides a real-time visualization of the RF network mesh, showing how nodes are interconnected and where signal bottlenecks occur.</p>
+                <ul>
+                    <li><strong>Mesh Visualization:</strong> Lines between nodes indicate signal strength (Strong, Medium, Weak). Moving lines indicate active data or voice traffic.</li>
+                    <li><strong>Diagnostic Controls:</strong>
+                        <ul style="margin-top:4px; font-size:13px;">
+                            <li><strong>Fit View:</strong> Automatically centers and scales the map to show all active nodes.</li>
+                            <li><strong>Reset:</strong> Returns the view to the default scale and center position.</li>
+                            <li><strong>Node Stats:</strong> Real-time count of active Clients and Infrastructure (Retrans) nodes.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Node Telemetry:</strong> Click any node on the map to view its specific frequency, MGRS coordinates, and neighbor list in the side panel.</li>
+                </ul>
+
+                <!-- 11. Advanced Tactical Features & Mesh Diagnostics -->
+                <h2 style="color:var(--accent-blue); margin-top:24px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">11. Advanced Tactical Features & Mesh Diagnostics ⚡</h2>
+                <p>TacNet features seven advanced combat operations enhancements developed to model professional communications networks:</p>
+                <ul>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">Spacebar Focus Intercept (PTT Guard):</strong> When operating the client, pressing Spacebar activates Push-To-Talk. An advanced global event filter automatically intercepts the spacebar press, ensuring that if you are currently typing in a text input field, spacebar behaves as a normal character, but in any other area of the screen, the spacebar PTT is consumed cleanly without triggering accidental clicks on highlighted channel buttons.</li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">COMSEC Keyfills & Decryption Screech:</strong> Secure channels now utilize password-masked cryptographic passphrases defined in the <em>Comms Plan</em>. If a client attempts to communicate without a matching keyfill, the server rejects the key mismatch and plays back a loud, vector-synthesized LFO digital modem screeching sound to warn the operator of the COMSEC fault. In emergencies, clicking the red-bordered <code>ZEROIZE</code> button in the settings clears all channel keys globally and dynamically alerts the server mesh.</li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">RETRANS BFS Mesh Routing:</strong> Extends radio coverage over large grids by establishing undirected mesh connections via deployed retransmission nodes. The server automatically runs a Breadth-First Search (BFS) algorithm to route packets dynamically across all linked channels. A loop-prevention guard ensures audio does not feed back by tagging relayed packets with a <code>" [R]"</code> callsign suffix.</li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">Split-Ear Spatial Audio:</strong> A high-performance stereo audio panning algorithm. When enabled in the general settings:
+                        <ul style="margin-top:4px;">
+                            <li><strong>Primary Channel</strong> traffic is routed entirely to the <strong>Left Ear</strong>.</li>
+                            <li><strong>Monitored Channels</strong> traffic is routed entirely to the <strong>Right Ear</strong>.</li>
+                            <li><strong>General / Unknown</strong> traffic is mixed at $0.707\times$ constant power to <strong>Both Ears</strong>.</li>
+                            <li>Disabling spatial audio seamlessly collapses both channels back to a robust mixed-mono dual-ear output.</li>
+                        </ul>
+                    </li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">Vehicle Intercom (CH99 VIC):</strong> A local-wire intercom system. Any transmissions on CH99 bypass all terrain calculations, GPS degradation, and atmospheric attenuation factors, forcing a 100% stable ($1.0$ signal) connection for crew intercom simulation.</li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">Tactical Viewshed Coverage Heatmaps:</strong> Located in the <em>Tactical Map</em> tab. Selecting an active transmitter from the dropdown and clicking <code>▶ Run Viewshed</code> initiates a POST request that simulates the radio's precise coverage. It projects HSL-colored rectangle cells onto the map based on terrain and weather attenuation:
+                        <ul style="margin-top:4px;">
+                            <li><strong>Green Cells (≥80%):</strong> Strong signal coverage.</li>
+                            <li><strong>Amber Cells (≥40%):</strong> Marginal signal (static/choppiness likely).</li>
+                            <li><strong>Red Cells (&lt;40%):</strong> Weak signal / connection dropout.</li>
+                        </ul>
+                    </li>
+                    <li style="margin-bottom:8px;"><strong style="color:var(--text-primary)">Command Telemetry HUDs:</strong> Four premium diagnostics cards placed directly on the main <em>Dashboard</em> tab:
+                        <ul style="margin-top:4px;">
+                            <li><strong>Atmosphere & Terrain HUD:</strong> Live progress meters tracking rain attenuation, urban attenuation, multipath echoes, and active solar ionosphere storms.</li>
+                            <li><strong>EW & Threat Board:</strong> Dynamic tracking of OPFOR RF jammers, active threat counts, urban EMI levels, co-site risks, and silenced EMCON nodes.</li>
+                            <li><strong>LQA Matrix:</strong> Live grid detailing all mutual direct/mesh link path states, geographical distances, and signal percentages.</li>
+                            <li><strong>PACE Plan Auditor:</strong> Audits all connected callsigns to warn of missing loadout components (e.g. SATCOM or HF band assigned without matching hardware antenna) and checks COMSEC key fills.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Sidebar -->
+            <div style="background:var(--bg-tertiary); padding:20px; border-radius:12px; border:1px solid var(--border-color); height: fit-content; position: sticky; top: 20px;">
+                <h3 style="margin-top:0; color: var(--accent-amber);">Pro Tips</h3>
+                <ul style="padding-left:18px; font-size:13px; color: var(--text-secondary);">
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Check Your Ranges:</strong> Check the <em>Signal Quality</em> tab if operators report issues.</li>
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Use Retrans Nodes:</strong> Deploy nodes strategically on high ground.</li>
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Mesh Health:</strong> Use the <em>Topology</em> tab to identify dead spots in your mesh. A "Weak" link often indicates upcoming communication drops.</li>
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Fit View:</strong> If you lose track of nodes after panning, use <code>Fit View</code> in the Topology sidebar to quickly re-center.</li>
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Monitor Dashboard:</strong> Real-time view of packet drops and jamming impact.</li>
+                    <li style="margin-bottom:12px"><strong style="color:var(--text-primary)">Export Plans:</strong> Save your CEOI as a JSON file for quick restoration.</li>
+                </ul>
+                <hr style="border-color: var(--border-color); margin: 20px 0;">
+                <h4 style="margin-top:0;">Need Support?</h4>
+                <p style="font-size:12px; color:var(--text-muted);">Ensure ports <strong>5000 TCP</strong> & <strong>5005 UDP</strong> are open.</p>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">📧 <a href="#" style="color:var(--accent-blue); text-decoration:none;">Discord Community</a></p>
+            </div>
+        </div>
+    </div>
+</section>

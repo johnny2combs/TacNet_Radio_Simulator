@@ -1,0 +1,320 @@
+<section class="section" id="section-map">
+    <style>
+        .hud-fab {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+        }
+        .hud-fab:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        .hud-fab svg { width: 20px; height: 20px; }
+        
+        .map-overlay.top-right { z-index: 1050; }
+        .map-overlay.top-left { z-index: 1050; }
+        
+        .hud-panel {
+            pointer-events: auto;
+            min-width: 200px;
+            padding: 14px;
+            background: rgba(10, 15, 29, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--accent-blue);
+            opacity: 0.6;
+        }
+        .hud-panel.warn::before { background: var(--accent-amber); }
+        .hud-panel.danger::before { background: var(--accent-red); }
+        .hud-panel.success::before { background: var(--accent-green); }
+
+        .hud-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hud-title svg { width: 14px; height: 14px; opacity: 0.7; }
+
+        .hud-stat-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .hud-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+        .hud-stat-label { color: var(--text-secondary); }
+        .hud-stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-primary); }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .lg-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .lg-dot.ok { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        .lg-dot.warn { background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber); }
+        .lg-dot.danger { background: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+        
+        /* Sidebar Asset Cards */
+        .map-asset-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .map-asset-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .map-asset-card.active {
+            border-color: var(--accent-blue);
+            background: rgba(0, 184, 212, 0.08);
+        }
+
+        .btn.active {
+            background: var(--accent-blue) !important;
+            color: #000 !important;
+            border-color: var(--accent-blue) !important;
+            font-weight: 700;
+        }
+
+        #map-ctrl-ruler.active {
+            background: var(--accent-amber) !important;
+            color: #000 !important;
+            border-color: var(--accent-amber) !important;
+        }
+    </style>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Tactical C2 Map</h1>
+            <p class="page-subtitle">Real-time situational awareness and network topology</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('map')">
+            <span>❓</span> Help
+        </div>
+    </div>
+    <div class="card" style="border:none; background:transparent">
+        <div class="card-body" style="padding: 0; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--bg-secondary);">
+            <div style="display: flex; height: calc(100vh - 180px); min-height: 700px;">
+                <!-- Left Registry -->
+                <div style="width: 300px; border-right: 1px solid var(--border-color); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); display: flex; flex-direction: column;">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                        <div class="hud-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Asset Registry
+                        </div>
+                        <div style="position:relative">
+                            <input type="text" class="form-input" id="map-asset-search" placeholder="Search callsign..." 
+                                style="margin-bottom: 0; padding: 10px 12px 10px 36px; font-size: 0.8125rem; background: rgba(0,0,0,0.3); border-radius: 8px;"
+                                onkeyup="mapFilterAssets()">
+                            <svg style="position:absolute; left:12px; top:11px; width:14px; height:14px; color:var(--text-muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                    </div>
+                    <div id="map-asset-list" style="flex: 1; overflow-y: auto; padding: 16px;">
+                        <!-- Rendered by JS -->
+                    </div>
+                    <div style="padding: 16px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.3);">
+                        <button class="btn btn-sm amber" style="width:100%" onclick="mapFitAll()">CENTER ALL ASSETS</button>
+                    </div>
+                </div>
+
+                <!-- Center Map -->
+                <div style="flex: 1; position: relative; min-width: 0;">
+                    <div id="tactical-map" style="width: 100%; height: 100%; z-index: 10;"></div>
+
+                    <!-- HUD: Link Intelligence -->
+                    <div class="map-overlay top-left" style="top: 24px; left: 24px;">
+                        <div class="hud-panel">
+                            <div class="hud-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.59 16.11a6 6 0 0 1 6.82 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                                Link Intelligence
+                            </div>
+                            <div class="legend-item"><span class="lg-dot ok"></span> <span>Nominal (>70%)</span></div>
+                            <div class="legend-item"><span class="lg-dot warn"></span> <span>Degraded (35-70%)</span></div>
+                            <div class="legend-item"><span class="lg-dot danger"></span> <span>Denied (<35%)</span></div>
+                            <div class="legend-item" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px">
+                                <span class="lg-dot danger" style="animation: pulse 1s infinite"></span> <span>Active Jamming</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HUD: Spectrum Monitor -->
+                    <div class="map-overlay bottom-left" style="bottom: 24px; left: 24px;">
+                        <div class="hud-panel" id="map-spectrum-panel" style="min-width: 220px;">
+                            <div class="hud-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                Spectrum Monitor
+                            </div>
+                            <div id="map-spectrum-list" class="hud-stat-grid">
+                                <div style="font-size:0.7rem; color:var(--text-muted); font-style:italic;">Initializing spectral scan...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HUD: System Health -->
+                    <div class="map-overlay bottom-left" style="bottom: 180px; left: 24px;">
+                        <div class="hud-panel success" id="map-health-panel">
+                            <div class="hud-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                Relay Health
+                            </div>
+                            <div id="map-sys-status" class="hud-stat-grid">
+                                <div class="hud-stat-item">
+                                    <span class="hud-stat-label">Routing Engine</span>
+                                    <span class="badge ok">ACTIVE</span>
+                                </div>
+                                <div class="hud-stat-item">
+                                    <span class="hud-stat-label">EW Environment</span>
+                                    <span class="badge" id="map-badge-ew">NOMINAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map HUD Tools -->
+                    <div class="map-overlay top-center" id="map-pick-indicator" style="display:none; top: 24px; left: 50%; transform: translateX(-50%); pointer-events: auto;">
+                        <div class="hud-panel" style="padding: 10px 20px; display: flex; align-items: center; gap: 16px; border: 1px dashed var(--accent-blue); background: rgba(15, 23, 42, 0.95);">
+                            <div style="display:flex; align-items:center; gap:8px">
+                                <div class="lg-dot ok pulse" style="background:var(--accent-blue); box-shadow:0 0 10px var(--accent-blue)"></div>
+                                <span style="color: var(--accent-blue); font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em;">SELECT DEPLOYMENT POINT</span>
+                            </div>
+                            <button class="btn btn-sm" onclick="cancelNodePick()" style="padding: 4px 12px; font-size: 0.7rem; background: rgba(255,255,255,0.05);">CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Controls -->
+                <div style="width: 320px; flex-shrink: 0; border-left: 1px solid var(--border-color); background: var(--bg-tertiary); display: flex; flex-direction: column;">
+                    <div style="padding: 20px; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                        Tactical Controls</div>
+                    <div style="flex: 1; overflow-y: auto; padding: 20px;">
+                        
+                        <div class="control-group">
+                            <div class="group-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 15.3l-5-5L19 7.7l5 5-2.7 2.6zM9.5 3.5l5 5L11.8 11l-5-5 2.7-2.5z" /><path d="M7.2 5.8L2.1 10.9l2.8 2.8L10 8.6l-2.8-2.8z" /><path d="M16.2 14.8l-5.1 5.1 2.8 2.8 5.1-5.1-2.8-2.8z" /><path d="M10.2 8.8l-5.1 5.1 2.8 2.8 5.1-5.1-2.8-2.8z" /></svg>
+                                <span class="group-title">Mission Analysis</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-sm mode-btn" id="map-mode-cpx" onclick="mapApplyPreset('cpx')" style="flex:1">CPX MODE</button>
+                                <button class="btn btn-sm mode-btn" id="map-mode-sim" onclick="mapApplyPreset('sim')" style="flex:1">TACTICAL RADIO MODE</button>
+                            </div>
+                            <button class="btn btn-block" id="map-ctrl-ruler" onclick="mapToggleRuler()" style="margin-top:8px">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px; margin-right:6px; vertical-align:middle;"><path d="M21.3 15.3l-5-5L19 7.7l5 5-2.7 2.6zM9.5 3.5l5 5L11.8 11l-5-5 2.7-2.5z" /><path d="M7.2 5.8L2.1 10.9l2.8 2.8L10 8.6l-2.8-2.8z" /><path d="M16.2 14.8l-5.1 5.1 2.8 2.8 5.1-5.1-2.8-2.8z" /><path d="M10.2 8.8l-5.1 5.1 2.8 2.8 5.1-5.1-2.8-2.8z" /></svg>
+                                MEASURE DISTANCE
+                            </button>
+                        </div>
+                        <div class="control-group">
+                            <div class="group-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+                                <span class="group-title">Signal Propagation</span>
+                            </div>
+                            <div class="ctrl-row">
+                                <span class="ctrl-label">Range Engine</span>
+                                <div class="toggle" id="map-ctrl-range" onclick="mapToggleRange()">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="ctrl-row">
+                                <span class="ctrl-label">SATCOM Uplink</span>
+                                <div class="toggle" id="map-ctrl-satcom" onclick="mapToggleSatcom()">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 16px;">
+                                <label class="form-label">Routing Policy</label>
+                                <select class="form-select mono" id="map-ctrl-routing" onchange="mapApplyRouting()" style="background:var(--bg-primary); border-radius: 8px; font-size:0.75rem;">
+                                    <option value="direct">DIRECT LOS</option>
+                                    <option value="assisted">RETRANS ASSIST</option>
+                                    <option value="hybrid">HYBRID (SATCOM)</option>
+                                    <option value="auto">AUTO OPTIMIZE</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="group-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--accent-red)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                                <span class="group-title">Electronic Warfare</span>
+                            </div>
+                            <button class="btn btn-block danger" onclick="mapApplyJamming()">GLOBAL DENIAL (JAM)</button>
+                            <button class="btn btn-block" style="margin-top:8px" onclick="openGenericModal('section-ew', 'Electronic Warfare & Jamming')">ADVANCED EFFECTS</button>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="group-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+                                <span class="group-title">Environmental</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Terrain Classification</label>
+                                <select class="form-select mono" id="map-terrain-type" onchange="updateTerrainType()" style="background:var(--bg-primary); border-radius: 8px; font-size:0.75rem;">
+                                    <option value="open">OPEN TERRAIN</option>
+                                    <option value="forest">FOREST / WOODLAND</option>
+                                    <option value="urban">URBAN / BUILT-UP</option>
+                                    <option value="mountain">MOUNTAINOUS</option>
+                                    <option value="water">OVER-WATER</option>
+                                </select>
+                            </div>
+                            <div class="ctrl-btn-grid" style="margin-top:12px">
+                                <button class="btn btn-sm" onclick="openGenericModal('section-weather', 'Weather & Atmosphere')">WEATHER</button>
+                                <button class="btn btn-sm" onclick="openGenericModal('section-daynight', 'Day / Night Cycle')">DNC</button>
+                            </div>
+                            <button class="btn btn-sm amber" style="width:100%; margin-top:8px" onclick="openNodeModal(null)">DEPLOY RETRANS</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (async () => {
+            console.log("Map component mounted");
+            if (typeof mapRefresh === 'function') mapRefresh();
+        })();
+    </script>
+</section>

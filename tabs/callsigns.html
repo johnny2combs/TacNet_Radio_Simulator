@@ -1,0 +1,185 @@
+<!-- tabs/callsigns.html -->
+<section class="section" id="section-callsigns">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 24px;">
+        <div>
+            <h1 class="page-title">Tactical Roster</h1>
+            <p class="page-subtitle">Monitor operator status and hardware assignments</p>
+        </div>
+        <div class="header-stats" style="display:flex; gap: 20px;">
+            <div class="stat-item">
+                <span class="stat-label">TOTAL PERSONNEL</span>
+                <span class="stat-value" id="stat-total-personnel">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" style="color:var(--gn)">OPERATIONAL</span>
+                <span class="stat-value" id="stat-online-personnel" style="color:var(--gn)">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">TOTAL UNITS</span>
+                <span class="stat-value" id="stat-total-units">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-bar" style="display:flex; gap:12px; margin-bottom:24px; background:rgba(255,255,255,0.03); padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+        <div style="flex:1; position:relative;">
+            <input type="text" id="cs-search" placeholder="Search by callsign, name, unit, or role..." 
+                   oninput="renderCallsignsFull()"
+                   style="width:100%; padding:10px 16px 10px 40px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; color:white;">
+            <svg style="position:absolute; left:12px; top:11px; width:18px; height:18px; opacity:0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <button class="btn amber" onclick="openCallsignModal(null)" style="padding:0 24px; height:42px;">+ Add Callsign</button>
+    </div>
+
+    <div id="cs-grid" class="callsign-grid">
+        <div class="empty-state" style="padding:100px; grid-column: 1 / -1;">Synchronizing Tactical Database...</div>
+    </div>
+
+    <style>
+        .callsign-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .operator-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .operator-card:hover {
+            border-color: var(--text-muted);
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.04);
+        }
+        .operator-card.online {
+            border-left: 4px solid var(--gn);
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.05) 0%, rgba(0,0,0,0) 100%);
+        }
+        .operator-card.talking {
+            border-left-color: var(--gn);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.15);
+            animation: operator-pulse 1.5s infinite;
+        }
+        @keyframes operator-pulse {
+            0%, 100% { border-left-width: 4px; }
+            50% { border-left-width: 8px; }
+        }
+
+        .op-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .op-callsign {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.5px;
+        }
+        .op-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+        .operator-card.online .status-dot {
+            background: var(--gn);
+            box-shadow: 0 0 8px var(--gn);
+        }
+
+        .op-identity {
+            display: flex;
+            flex-direction: column;
+        }
+        .op-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .op-role {
+            font-size: 11px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .op-unit-tag {
+            font-size: 10px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .op-hardware {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hw-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .hw-value {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .op-channels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .ch-pill {
+            font-size: 9px;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+        .ch-pill.active {
+            border-color: var(--gn);
+            color: var(--gn);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .op-actions {
+            margin-top: 4px;
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof renderCallsignsFull === 'function') renderCallsignsFull();
+        })();
+    </script>
+</section>

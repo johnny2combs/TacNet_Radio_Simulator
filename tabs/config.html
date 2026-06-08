@@ -1,0 +1,199 @@
+<!-- tabs/config.html -->
+<section class="section" id="section-config">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">System Settings</h1>
+            <p class="page-subtitle">Configure simulation engine core, network interfaces, and external platform integrations.</p>
+        </div>
+        <div class="help-trigger" onclick="showQuickHelp('config')">
+            <span>❓</span> Help Center
+        </div>
+    </div>
+
+    <div class="settings-layout">
+        <!-- Main Settings Column -->
+        <div class="settings-main">
+            <div id="cfg-form" class="settings-grid">
+                <!-- Cards dynamically injected here by loadConfig() -->
+            </div>
+            
+            <div class="settings-actions-footer">
+                <div class="footer-info">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+                    <span>Core network and integration changes take effect immediately. System restart may be required for port binding changes.</span>
+                </div>
+                <div style="display:flex; gap:12px">
+                    <button class="btn" onclick="loadConfig()" style="background:transparent; border-color:rgba(255,255,255,0.1)">
+                        Reset Changes
+                    </button>
+                    <button class="btn amber" onclick="saveConfig()" style="padding: 10px 24px; font-weight: 700;">
+                        Apply Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column (Engine Health Only) -->
+        <div class="settings-sidebar">
+            <div class="card">
+                <div class="card-header" style="padding: 12px 16px;">
+                    <div class="card-title" style="font-size: 0.75rem; color: var(--accent-amber);">ENGINE STATUS</div>
+                </div>
+                <div class="card-body" style="padding: 16px;">
+                    <div class="health-item">
+                        <span class="health-label">Simulation Uptime</span>
+                        <span id="uptime" class="health-val mono">--:--:--</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Active Clients</span>
+                        <span id="sc-clients" class="health-val mono">0</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Packet Relay Rate</span>
+                        <span id="sc-rel" class="health-val mono">0</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Relay Integrity</span>
+                        <span id="sc-health" class="health-val mono" style="color:var(--accent-green)">100%</span>
+                    </div>
+                    <div class="health-item" style="border-bottom:none">
+                        <span class="health-label">Engine Latency</span>
+                        <span id="sc-drop" class="health-val mono" style="color:var(--accent-red)">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px; background:rgba(0,184,212,0.02)">
+                <div class="card-body" style="padding:16px; font-size:0.75rem; color:var(--text-muted); line-height:1.4">
+                    <strong style="color:var(--text-secondary); display:block; margin-bottom:4px">Range Model Note:</strong>
+                    Propagation and range simulation parameters have been moved to the <a href="#" onclick="document.querySelector('[data-section=infrastructure]').click()" style="color:var(--accent-blue); text-decoration:none">Infrastructure</a> module for better operational alignment.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .settings-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            align-items: start;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .settings-card {
+            background: var(--bg-secondary);
+            backdrop-filter: var(--glass);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .settings-card-header {
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-card-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+        }
+
+        .settings-card-body {
+            padding: 20px;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .settings-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .settings-info {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .settings-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .settings-desc {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .settings-control {
+            flex-shrink: 0;
+            width: 160px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .settings-actions-footer {
+            margin-top: 24px;
+            padding: 20px;
+            background: rgba(0, 184, 212, 0.03);
+            border: 1px solid rgba(0, 184, 212, 0.1);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-width: 60%;
+        }
+
+        .health-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .health-label { font-size: 0.75rem; color: var(--text-secondary); }
+        .health-val { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+
+        @media (max-width: 1100px) {
+            .settings-layout { grid-template-columns: 1fr; }
+            .settings-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        }
+    </style>
+
+    <script>
+        (async () => {
+            if (typeof loadConfig === 'function') {
+                await loadConfig('cfg-form', CFG_SERVER);
+            }
+        })();
+    </script>
+</section>

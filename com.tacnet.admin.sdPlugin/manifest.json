@@ -1,0 +1,291 @@
+{
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    }
+  ],
+  "Author": "TacNet",
+  "CodePath": "plugin.html",
+  "Description": "Simulation admin, environmental injections, and EW controls for TacNet Server",
+  "Name": "TacNet Admin",
+  "Icon": "icon",
+  "Version": "1.0.0",
+  "Actions": [
+    {
+      "UUID": "com.tacnet.admin.jam",
+      "Name": "EW Jamming Control",
+      "Tooltip": "Toggle RF jamming or adjust intensity on a target channel",
+      "Icon": "icon_jam",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$X1",
+        "triggerDescription": {
+          "rotate": "Adjust Intensity",
+          "push": "Toggle Jamming",
+          "touch": "Toggle Jamming"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon_jam"
+        }
+      ],
+      "Settings": {
+        "channel": 1,
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.weather",
+      "Name": "Weather Control",
+      "Tooltip": "Toggle weather or adjust severity of environmental propagation",
+      "Icon": "icon_weather",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$A1",
+        "triggerDescription": {
+          "rotate": "Adjust Severity",
+          "push": "Toggle Weather",
+          "touch": "Toggle Weather"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon_weather"
+        }
+      ],
+      "Settings": {
+        "weather_action": "toggle",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.node",
+      "Name": "Retrans Node Control",
+      "Tooltip": "Enable/disable a specific infrastructure retransmission tower",
+      "Icon": "icon_retrans",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "node_id": "RT1",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.satcom",
+      "Name": "SATCOM Control",
+      "Tooltip": "Toggle SATCOM connectivity or degrade with latency",
+      "Icon": "icon_satcom",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$A1",
+        "triggerDescription": {
+          "rotate": "Adjust Latency",
+          "push": "Toggle SATCOM",
+          "touch": "Toggle SATCOM"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "satcom_action": "toggle",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.gps",
+      "Name": "GPS Control",
+      "Tooltip": "Toggle GPS simulation or degrade accuracy coordinates",
+      "Icon": "icon_gps",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$A1",
+        "triggerDescription": {
+          "rotate": "Adjust Error",
+          "push": "Toggle GPS",
+          "touch": "Toggle GPS"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "gps_action": "toggle",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.aar",
+      "Name": "AAR Recording Control",
+      "Tooltip": "Start/stop After Action Report recording or mark H-Hour",
+      "Icon": "icon_aar",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "aar_mode": "toggle",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.daynight",
+      "Name": "Day / Night Control",
+      "Tooltip": "Adjust simulation cycle hour or trigger presets",
+      "Icon": "icon_daynight",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$X1",
+        "triggerDescription": {
+          "rotate": "Adjust Hour",
+          "push": "Toggle Day/Night",
+          "touch": "Toggle Day/Night"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "preset_hour": 12,
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.emi",
+      "Name": "EMI Level Control",
+      "Tooltip": "Adjust background Electromagnetic Interference noise ceiling",
+      "Icon": "icon_emi",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$A1",
+        "triggerDescription": {
+          "rotate": "Adjust Noise",
+          "push": "Toggle EMI",
+          "touch": "Toggle EMI"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "emi_action": "toggle",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.roster",
+      "Name": "Operator Monitor",
+      "Tooltip": "Monitor an operator callsign status and force their channel",
+      "Icon": "icon_operator_monitor",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon_operator_monitor"
+        }
+      ],
+      "Settings": {
+        "callsign": "ALPHA-1",
+        "force_channel": 1,
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.aarmarker",
+      "Name": "AAR Event Marker",
+      "Tooltip": "Insert a custom event marker (IED, Contact, etc.) into the active AAR session",
+      "Icon": "icon_aar_marker",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon_aar_marker"
+        }
+      ],
+      "Settings": {
+        "marker_label": "CONTACT",
+        "marker_details": "",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.admin.scenario",
+      "Name": "Scenario Preset",
+      "Tooltip": "Apply a macro environmental scenario preset",
+      "Icon": "icon_scenario",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon_scenario"
+        }
+      ],
+      "Settings": {
+        "scenario_profile": "clear",
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    }
+  ],
+  "Category": "TacNet Admin",
+  "CategoryIcon": "icon",
+  "Software": {
+    "MinimumVersion": "6.0"
+  }
+}

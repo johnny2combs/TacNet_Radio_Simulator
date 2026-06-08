@@ -1,0 +1,350 @@
+{
+  "nodes": [
+    {
+      "id": "sim_1",
+      "lat": -40.297072079899124,
+      "lng": 175.4018783569336,
+      "type": "prc117g",
+      "callsign": "Prc117g 1",
+      "netId": "net_1779657668131",
+      "pace": {
+        "p": "",
+        "a": "",
+        "c": "",
+        "e": ""
+      },
+      "loadout": {
+        "sat_terminal": false,
+        "hf_radio": false,
+        "power_pack": false,
+        "retrans_kit": false,
+        "amp": false
+      },
+      "route": []
+    },
+    {
+      "id": "sim_2",
+      "lat": -40.2583067615101,
+      "lng": 175.33424377441406,
+      "type": "prc117g",
+      "callsign": "Prc117g 2",
+      "netId": "net_1779657668131",
+      "pace": {
+        "p": "",
+        "a": "",
+        "c": "",
+        "e": ""
+      },
+      "loadout": {
+        "sat_terminal": false,
+        "hf_radio": false,
+        "power_pack": false,
+        "retrans_kit": false,
+        "amp": false
+      },
+      "route": []
+    },
+    {
+      "id": "sim_3",
+      "lat": -40.29314417465944,
+      "lng": 175.32669067382815,
+      "type": "prc117g",
+      "callsign": "Prc117g 3",
+      "netId": "net_1779657668131",
+      "pace": {
+        "p": "",
+        "a": "",
+        "c": "",
+        "e": ""
+      },
+      "loadout": {
+        "sat_terminal": false,
+        "hf_radio": false,
+        "power_pack": false,
+        "retrans_kit": false,
+        "amp": false
+      },
+      "route": []
+    },
+    {
+      "id": "sim_4",
+      "lat": -40.32115823707007,
+      "lng": 175.34969329833984,
+      "type": "prc117g",
+      "callsign": "Prc117g 4",
+      "netId": "net_1779657668131",
+      "pace": {
+        "p": "",
+        "a": "",
+        "c": "",
+        "e": ""
+      },
+      "loadout": {
+        "sat_terminal": false,
+        "hf_radio": false,
+        "power_pack": false,
+        "retrans_kit": false,
+        "amp": false
+      },
+      "route": []
+    },
+    {
+      "id": "sim_5",
+      "lat": -40.32429927645618,
+      "lng": 175.38711547851565,
+      "type": "prc117g",
+      "callsign": "Prc117g 5",
+      "netId": "net_1779657668131",
+      "pace": {
+        "p": "",
+        "a": "",
+        "c": "",
+        "e": ""
+      },
+      "loadout": {
+        "sat_terminal": false,
+        "hf_radio": false,
+        "power_pack": false,
+        "retrans_kit": false,
+        "amp": false
+      },
+      "route": []
+    }
+  ],
+  "nets": [
+    {
+      "id": "net_1779657668131",
+      "name": "Net Structure 1",
+      "priority": "normal",
+      "crypto": "none",
+      "pace": {
+        "p": "V-01 (CMD)",
+        "a": "U-01",
+        "c": "H-01",
+        "e": "SAT-01"
+      }
+    }
+  ],
+  "timeline": [
+    {
+      "id": "tl_1779658389632",
+      "trigger": "",
+      "move": "",
+      "hover": "",
+      "notes": ""
+    }
+  ],
+  "sois": [
+    {
+      "version": "v1.0",
+      "status": "Active",
+      "schedule": "Daily @ 0000M",
+      "freqs": [
+        {
+          "preset": "H-01",
+          "freq": "141.500",
+          "band": "VHF",
+          "crypto": "OVNMGJ8K-758"
+        },
+        {
+          "preset": "SAT-01",
+          "freq": "2445.000",
+          "band": "SHF",
+          "crypto": "BANKO4LK-276"
+        },
+        {
+          "preset": "U-01",
+          "freq": "169.125",
+          "band": "VHF",
+          "crypto": "B9UWJK7W-579"
+        },
+        {
+          "preset": "V-01 (CMD)",
+          "freq": "184.000",
+          "band": "VHF",
+          "crypto": "7SHILE0B-318"
+        }
+      ],
+      "authGrid": [
+        [
+          "NB",
+          "OD",
+          "RM",
+          "TY",
+          "UT",
+          "EA",
+          "KJ",
+          "DN",
+          "OL",
+          "UT"
+        ],
+        [
+          "NZ",
+          "PT",
+          "FP",
+          "OE",
+          "JK",
+          "SS",
+          "HG",
+          "JS",
+          "KE",
+          "UG"
+        ],
+        [
+          "WX",
+          "TD",
+          "LM",
+          "YQ",
+          "TH",
+          "HA",
+          "EO",
+          "GS",
+          "HJ",
+          "CC"
+        ],
+        [
+          "UX",
+          "EJ",
+          "OL",
+          "UQ",
+          "GZ",
+          "CN",
+          "EU",
+          "VD",
+          "RM",
+          "FX"
+        ],
+        [
+          "KT",
+          "TS",
+          "RQ",
+          "MU",
+          "KM",
+          "LU",
+          "ZL",
+          "UN",
+          "HM",
+          "BE"
+        ],
+        [
+          "YA",
+          "VD",
+          "VL",
+          "QI",
+          "MG",
+          "EG",
+          "IT",
+          "VD",
+          "XL",
+          "JU"
+        ],
+        [
+          "ON",
+          "EH",
+          "CK",
+          "PO",
+          "HU",
+          "MN",
+          "DL",
+          "PO",
+          "UZ",
+          "KZ"
+        ],
+        [
+          "ND",
+          "IO",
+          "RP",
+          "ID",
+          "SV",
+          "QQ",
+          "RA",
+          "FH",
+          "DF",
+          "GB"
+        ],
+        [
+          "EJ",
+          "XE",
+          "IZ",
+          "WU",
+          "BE",
+          "BK",
+          "YW",
+          "NB",
+          "CY",
+          "GA"
+        ],
+        [
+          "QC",
+          "VB",
+          "EB",
+          "SY",
+          "ZG",
+          "OS",
+          "KM",
+          "PH",
+          "SF",
+          "NW"
+        ]
+      ],
+      "ramrod": "WOLFHUNDSZ",
+      "trigrams": [
+        {
+          "challenge": "XJ",
+          "response": "E"
+        },
+        {
+          "challenge": "AG",
+          "response": "P"
+        },
+        {
+          "challenge": "SK",
+          "response": "S"
+        },
+        {
+          "challenge": "QI",
+          "response": "Q"
+        },
+        {
+          "challenge": "JG",
+          "response": "G"
+        },
+        {
+          "challenge": "AT",
+          "response": "H"
+        },
+        {
+          "challenge": "HJ",
+          "response": "K"
+        },
+        {
+          "challenge": "VM",
+          "response": "F"
+        }
+      ],
+      "callsigns": [
+        {
+          "base": "Prc117g 1",
+          "assigned": "Prc117g 1-P2"
+        },
+        {
+          "base": "Prc117g 2",
+          "assigned": "Prc117g 2-P2"
+        },
+        {
+          "base": "Prc117g 3",
+          "assigned": "Prc117g 3-A3"
+        },
+        {
+          "base": "Prc117g 4",
+          "assigned": "Prc117g 4-V5"
+        },
+        {
+          "base": "Prc117g 5",
+          "assigned": "Prc117g 5-B3"
+        }
+      ],
+      "created_at": "2026-05-24T21:36:57.422Z"
+    }
+  ]
+}
