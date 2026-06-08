@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TacNet Companion Property Inspector</title>
+    <style>
+        body {
+            background-color: #2d2d2d;
+            color: #d8d8d8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 10px;
+        }
+        .sdpi-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sdpi-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .sdpi-item-label {
+            font-weight: bold;
+            width: 110px;
+            color: #a3a3a3;
+        }
+        .sdpi-item-value {
+            flex-grow: 1;
+        }
+        select, input {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+        .section-header {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a78bfa;
+            margin-bottom: 4px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 2px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .hint {
+            font-size: 9px;
+            color: #666;
+            margin-top: 2px;
+            padding-left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+
+        <!-- Global: Client Port -->
+        <div class="section-header">Connection</div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Client Port</div>
+            <div class="sdpi-item-value">
+                <input type="number" id="client_port" min="1" max="65535" value="8895" onchange="saveSettings()" />
+                <div class="hint">radio_client.py local API port (default: 8895)</div>
+            </div>
+        </div>
+
+        <!-- Action: Teammate Range Grid -->
+        <div id="section-teammate" class="hidden">
+            <div class="section-header">Teammate Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Callsign</div>
+                <div class="sdpi-item-value">
+                    <input type="text" id="callsign" value="ALPHA-2" placeholder="e.g. BRAVO-3" onchange="saveSettings()" />
+                    <div class="hint">Must match client callsign exactly (case insensitive)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action: Objective Compass -->
+        <div id="section-nav" class="hidden">
+            <div class="section-header">Navigation Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Info</div>
+                <div class="sdpi-item-value">
+                    <div class="hint" style="font-size:10px; color:#a78bfa;">
+                        Bearing is driven by the active waypoint in radio_client.py.<br>
+                        Press key to cycle to the next waypoint.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action: Radio Check -->
+        <div id="section-radiocheck" class="hidden">
+            <div class="section-header">Radio Check Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Info</div>
+                <div class="sdpi-item-value">
+                    <div class="hint" style="font-size:10px; color:#f87171;">
+                        Pressing this key triggers a silent test tone via radio_client.py.<br>
+                        The key flashes red while transmitting.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        var websocket = null;
+        var uuid = null;
+        var settings = {};
+        var actionUuid = "";
+
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            var actionInfo = JSON.parse(inActionInfo);
+            actionUuid = actionInfo.action;
+            settings = actionInfo.payload.settings || {};
+
+            // Apply defaults
+            if (settings.client_port === undefined) settings.client_port = 8895;
+            if (settings.callsign === undefined)    settings.callsign    = "ALPHA-2";
+
+            // Populate fields
+            document.getElementById('client_port').value = settings.client_port;
+            document.getElementById('callsign').value    = settings.callsign;
+
+            // Show relevant sections
+            showActionSections();
+
+            websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+            websocket.onopen = function () {
+                websocket.send(JSON.stringify({ "event": inRegisterEvent, "uuid": inUUID }));
+            };
+        }
+
+        function connectElgatoStreamDeck(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo);
+        }
+
+        function showActionSections() {
+            if (actionUuid === "com.tacnet.companion.teammate") {
+                document.getElementById('section-teammate').classList.remove('hidden');
+            } else if (actionUuid === "com.tacnet.companion.nav") {
+                document.getElementById('section-nav').classList.remove('hidden');
+            } else if (actionUuid === "com.tacnet.companion.radiocheck") {
+                document.getElementById('section-radiocheck').classList.remove('hidden');
+            }
+            // status action has no extra section
+        }
+
+        function saveSettings() {
+            settings.client_port = parseInt(document.getElementById('client_port').value) || 8895;
+            settings.callsign    = document.getElementById('callsign').value || "ALPHA-2";
+
+            if (websocket) {
+                websocket.send(JSON.stringify({
+                    "event":   "setSettings",
+                    "context": uuid,
+                    "payload": settings
+                }));
+            }
+        }
+    </script>
+</body>
+</html>

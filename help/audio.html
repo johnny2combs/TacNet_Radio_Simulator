@@ -1,0 +1,43 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+    
+    .help-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+    .help-step-num { flex-shrink: 0; width: 24px; height: 24px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; margin-right: 12px; margin-top: 2px; }
+    
+    .help-code { font-family: 'JetBrains Mono', monospace; background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--text-primary); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Server Audio Monitor</h2>
+        <p>Listen to live network traffic directly from the server.</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. Server Monitoring</summary>
+        <div class="content">This tool allows an administrator or instructor to 'jack in' to any channel and monitor voice traffic without needing to launch a dedicated client application.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Configuration</summary>
+        <div class="content">Select the channel you wish to monitor from the dropdown. Adjust the volume slider to your preference. You will hear all traffic exactly as the server receives it, prior to any destination physics degradation.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>3. Split-Ear Spatial Audio & Diagnostics</summary>
+        <div class="content">The TacNet Client audio engine features advanced tactical spatial panning and decryption status signals:<ul><li><strong>Split-Ear Panning:</strong> When enabled, Primary Channel traffic pans entirely to the <strong>Left Ear</strong>, Monitored Channels pan entirely to the <strong>Right Ear</strong>, and unassigned/unknown signals mix in <strong>Both Ears</strong> at constant power ($0.707\times$). This enables multi-channel listening without audio clutter.</li><li><strong>COMSEC Screech:</strong> If an incoming packet has mismatched crypto keys, the DSP engine immediately routes a vector-synthesized LFO-modulated digital screeching sound to the operator to diagnose a COMSEC mismatch.</li></ul></div>
+    </details>
+    <div class="help-alert"><strong>Note:</strong> You cannot transmit from this page. To communicate with operators, you must run TacNet-Client.exe and authenticate with a valid Callsign.</div>
+</div>

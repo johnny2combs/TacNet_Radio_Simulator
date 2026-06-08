@@ -1,0 +1,99 @@
+{
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    }
+  ],
+  "Author": "TacNet",
+  "CodePath": "plugin.html",
+  "Description": "Tactical operator telemetry, teammate proximity navigation, and radio check controls",
+  "Name": "TacNet Companion",
+  "Icon": "icon",
+  "Version": "1.0.0",
+  "Actions": [
+    {
+      "UUID": "com.tacnet.companion.status",
+      "Name": "Radio Status Monitor",
+      "Tooltip": "Display operator RSSI, battery, encryption, channel frequency, and MGRS fix",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "client_port": 8895
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.companion.teammate",
+      "Name": "Teammate Range Grid",
+      "Tooltip": "Track proximity, distance, and transmission status of a selected teammate",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "callsign": "ALPHA-2",
+        "client_port": 8895
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.companion.nav",
+      "Name": "Objective Compass",
+      "Tooltip": "Displays bearing and range needle pointing to the active navigation target",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "client_port": 8895
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.companion.radiocheck",
+      "Name": "Radio Check",
+      "Tooltip": "Trigger a silent test transmission tone",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "client_port": 8895
+      },
+      "PropertyInspectorPath": "pi.html"
+    }
+  ],
+  "Category": "TacNet Companion",
+  "CategoryIcon": "icon",
+  "Software": {
+    "MinimumVersion": "6.0"
+  }
+}

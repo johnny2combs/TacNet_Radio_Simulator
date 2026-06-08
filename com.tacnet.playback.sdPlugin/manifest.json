@@ -1,0 +1,119 @@
+{
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    }
+  ],
+  "Author": "TacNet",
+  "CodePath": "plugin.html",
+  "Description": "After-Action Review scrub deck with jog-wheel timeline, speed control, session loader, and bookmark export",
+  "Name": "TacNet AAR Playback",
+  "Icon": "icon",
+  "Version": "1.0.0",
+  "Actions": [
+    {
+      "UUID": "com.tacnet.playback.timeline",
+      "Name": "Timeline Scrub",
+      "Tooltip": "Jog-wheel scrub and play/pause control for AAR audio timeline",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Scrub timeline ±5s",
+          "Push": "Play / Pause",
+          "TouchTap": "Jump to start"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "server_port": 8890,
+        "scrub_step": 5
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.playback.speed",
+      "Name": "Playback Speed",
+      "Tooltip": "Dial to cycle or increment/decrement AAR playback speed",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Increase / Decrease speed",
+          "Push": "Reset to 1x",
+          "TouchTap": "Cycle speed preset"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "server_port": 8890
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.playback.session",
+      "Name": "Session Loader",
+      "Tooltip": "Load an AAR session folder and display exercise metadata",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "server_port": 8890,
+        "session_id": ""
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.playback.bookmark",
+      "Name": "Bookmark / Marker",
+      "Tooltip": "Mark current playback position as a highlight or export clip region",
+      "Icon": "icon",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "icon"
+        }
+      ],
+      "Settings": {
+        "server_port": 8890,
+        "marker_label": "HIGHLIGHT"
+      },
+      "PropertyInspectorPath": "pi.html"
+    }
+  ],
+  "Category": "TacNet AAR Playback",
+  "CategoryIcon": "icon",
+  "Software": {
+    "MinimumVersion": "6.0"
+  }
+}

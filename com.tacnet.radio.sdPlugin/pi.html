@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TacNet Radio PI</title>
+    <style>
+        body {
+            background-color: #2d2d2d;
+            color: #d8d8d8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 10px;
+        }
+        .sdpi-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sdpi-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sdpi-item-label {
+            font-weight: bold;
+            width: 100px;
+        }
+        .sdpi-item-value {
+            flex-grow: 1;
+        }
+        select, input {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+        <!-- Preset Channel Field -->
+        <div class="sdpi-item" id="channel-wrapper" style="display: none;">
+            <div class="sdpi-item-label">Preset Channel</div>
+            <div class="sdpi-item-value">
+                <input type="number" id="channel" min="0" max="99" value="1" onchange="saveSettings()" />
+            </div>
+        </div>
+        
+        <!-- Callsign Field -->
+        <div class="sdpi-item" id="callsign-wrapper" style="display: none;">
+            <div class="sdpi-item-label">Teammate Callsign</div>
+            <div class="sdpi-item-value">
+                <input type="text" id="callsign" placeholder="e.g. ALPHA-1" oninput="saveSettings()" />
+            </div>
+        </div>
+
+        <!-- LCD Theme Field -->
+        <div class="sdpi-item" id="lcd-wrapper" style="display: none;">
+            <div class="sdpi-item-label">LCD Color Theme</div>
+            <div class="sdpi-item-value">
+                <select id="lcd_theme" onchange="saveSettings()">
+                    <option value="classic">Classic Green</option>
+                    <option value="amber">Amber Glow</option>
+                    <option value="blue">Deep Blue</option>
+                    <option value="dark">Stealth Slate</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var websocket = null;
+        var uuid = null;
+        var settings = {};
+
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            var actionInfo = JSON.parse(inActionInfo);
+            var action = actionInfo.action;
+            settings = actionInfo.payload.settings || {};
+            
+            if (action === "com.tacnet.radio.channel") {
+                document.getElementById('channel-wrapper').style.display = 'flex';
+                if (settings.channel !== undefined) {
+                    document.getElementById('channel').value = settings.channel;
+                }
+            } else if (action === "com.tacnet.radio.member") {
+                document.getElementById('callsign-wrapper').style.display = 'flex';
+                if (settings.callsign !== undefined) {
+                    document.getElementById('callsign').value = settings.callsign;
+                }
+            } else if (action === "com.tacnet.radio.lcd") {
+                document.getElementById('lcd-wrapper').style.display = 'flex';
+                if (settings.lcd_theme !== undefined) {
+                    document.getElementById('lcd_theme').value = settings.lcd_theme;
+                }
+            }
+
+            websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+            websocket.onopen = function () {
+                var json = {
+                    "event": inRegisterEvent,
+                    "uuid": inUUID
+                };
+                websocket.send(JSON.stringify(json));
+            };
+        }
+
+        function connectElgatoStreamDeck(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo);
+        }
+
+        function saveSettings() {
+            var channelInput = document.getElementById('channel');
+            var callsignInput = document.getElementById('callsign');
+            var themeSelect = document.getElementById('lcd_theme');
+
+            if (document.getElementById('channel-wrapper').style.display !== 'none') {
+                var channelVal = parseInt(channelInput.value);
+                if (isNaN(channelVal)) channelVal = 1;
+                settings.channel = channelVal;
+            }
+
+            if (document.getElementById('callsign-wrapper').style.display !== 'none') {
+                settings.callsign = callsignInput.value.trim().toUpperCase();
+            }
+
+            if (document.getElementById('lcd-wrapper').style.display !== 'none') {
+                settings.lcd_theme = themeSelect.value;
+            }
+
+            if (websocket) {
+                var json = {
+                    "event": "setSettings",
+                    "context": uuid,
+                    "payload": settings
+                };
+                websocket.send(JSON.stringify(json));
+            }
+        }
+    </script>
+</body>
+</html>

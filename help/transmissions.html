@@ -1,0 +1,34 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Active Transmissions Board</h2>
+        <p>Live audio telemetry and RF status monitoring.</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. Operational Signal Statuses</summary>
+        <div class="content">Every unit actively connecting to the TacNet server is tracked here:<ul><li><span style="color:var(--accent-green)"><strong>TX (Transmitting):</strong></span> Pulsing green indicator. The operator is currently holding Push-To-Talk (PTT) and broadcasting audio.</li><li><span style="color:var(--accent-blue)"><strong>RX (Receiving):</strong></span> Pulsing blue indicator. The unit is currently receiving relayed audio from another transmitter.</li><li><strong>IDLE:</strong> Standard gray border. The node is online, authenticated, and monitoring channels, but no traffic is currently active.</li></ul></div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Real-time Transmission Telemetry</summary>
+        <div class="content">Each active card details critical physical constraints:<ul><li><strong>Channel ID:</strong> The active frequency net currently tuned in.</li><li><strong>Duration:</strong> Active transmission timer in seconds.</li><li><strong>LQA Signal Bar:</strong> Multi-bar real-time Signal Quality indicator (Red/Amber/Green). Shows the received SINAD/Clarity metric.</li><li><strong>Path Details:</strong> Indicates direct LOS connections, hops count through mesh nodes, or satellite latencies.</li></ul></div>
+    </details>
+    <div class="help-alert"><strong>Did you know?</strong> You can use the search bar in the <strong>Comms Plan</strong> or use filters on the <strong>Tactical Map</strong> to trace unit locations if a connection displays weak or degraded.</div>
+</div>

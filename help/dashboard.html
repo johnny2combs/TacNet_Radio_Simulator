@@ -1,0 +1,46 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+    
+    .help-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+    .help-step-num { flex-shrink: 0; width: 24px; height: 24px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; margin-right: 12px; margin-top: 2px; }
+    
+    .help-code { font-family: 'JetBrains Mono', monospace; background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--text-primary); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Network Dashboard</h2>
+        <p>Real-time overview of simulation health and connected clients.</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. Telemetry Metrics</summary>
+        <div class="content">The top grid displays live server performance metrics. <ul><li><strong>Clients Online:</strong> Number of actively connected operators.</li><li><strong>Packets Relayed:</strong> Total voice audio chunks routed by the server today.</li><li><strong>Packets Dropped:</strong> Audio discarded because the receiving client was out of radio range or jammed. High drop rates indicate a heavily contested RF environment.</li></ul></div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Connected Clients Matrix</summary>
+        <div class="content">This table lists every operator currently authenticated.<ul><li><strong>MGRS:</strong> Their live GPS position on the grid.</li><li><strong>Status:</strong> <span style='color:var(--accent-green)'>Green</span> means stable socket connection. <span style='color:var(--accent-amber)'>Yellow</span> means intermittent packet loss.</li><li><strong>Actions:</strong> You can forcibly kick a client from the server if they are stuck or unauthorized.</li></ul></div>
+    </details>
+    <details class="help-accordion" >
+        <summary>3. Live Network Activity</summary>
+        <div class="content">A scrolling event log of server-side operations, showing when clients join, leave, or change frequencies.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>4. Command Diagnostics HUD Grid</summary>
+        <div class="content">Four premium tactical boards dynamically audit simulation physics and compliance:<ul><li><strong>Atmosphere & Terrain HUD:</strong> Monitors signal attenuation factors from active rain, urban terrain structures, temperature inversions (skipping terrain), and solar ionospheric activity.</li><li><strong>EW & RF Threat Board:</strong> Active tracking of OPFOR jammer bubbles, background EMI levels, co-site frequency overlap hazards, and silenced EMCON nodes.</li><li><strong>Real-time LQA Matrix:</strong> Live grid detailing exact node-to-node signal paths, mutual grid distances (km), and mesh hops (direct vs retrans repeaters).</li><li><strong>PACE & COMSEC Auditor:</strong> Warns if a unit is assigned to SATCOM or HF bands but lacks the physical hardware antenna in their profile, and audits crypto key fills.</li></ul></div>
+    </details>
+</div>

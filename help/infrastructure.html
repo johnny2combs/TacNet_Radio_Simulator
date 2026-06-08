@@ -1,0 +1,47 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+    
+    .help-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+    .help-step-num { flex-shrink: 0; width: 24px; height: 24px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; margin-right: 12px; margin-top: 2px; }
+    
+    .help-code { font-family: 'JetBrains Mono', monospace; background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--text-primary); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Network Infrastructure</h2>
+        <p>Manage Retransmission (RETRA) nodes to extend radio range.</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. What is a Retrans Node?</summary>
+        <div class="content">In mountainous terrain, two handheld radios cannot communicate through solid rock. A Retrans Node acts as a bridge: placed on a high peak, it listens for a transmission on one channel and instantly rebroadcasts it, extending the line-of-sight network.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Deploying a Node</summary>
+        <div class="content">You can create a node here and assign it an MGRS coordinate, or simply create it and drag it into position on the <strong>Tactical Map</strong>. Assign it to specific channels so it only relays traffic intended for that net.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>3. Environmental Penalties</summary>
+        <div class="content">Retrans nodes are subject to the same physics as operators. If a node is placed in a deep valley, it will not be able to relay effectively. Nodes also apply a slight latency penalty to audio packets passing through them.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>4. Advanced Mesh Routing & Loop Protection</summary>
+        <div class="content">The TacNet server runs an advanced undirected mesh routing graph using a Breadth-First Search (BFS) routing algorithm:<ul><li><strong>Multi-Hop Relays:</strong> Audio packets automatically cascade through all configured retransmission pathways defined by the server's adjacency lists.</li><li><strong>Anti-Loop Guard:</strong> Relayed packets are labeled with a <code>" [R]"</code> callsign suffix. Any incoming packet carrying this suffix is ignored for further retransmission, preventing feedback loops and network flooding.</li></ul></div>
+    </details>
+    <div class="help-alert"><strong>Note:</strong> Nodes have their own TX Power and Antenna Height parameters. A node placed on a 30m tower will have vastly superior range to a node placed on the ground.</div>
+</div>

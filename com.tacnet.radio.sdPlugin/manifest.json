@@ -1,0 +1,247 @@
+{
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    }
+  ],
+  "Author": "TacNet",
+  "CodePath": "plugin.html",
+  "Description": "Control your TacNet client from Elgato Stream Deck",
+  "Name": "TacNet Radio",
+  "Icon": "icon",
+  "Version": "1.0.0",
+  "Actions": [
+    {
+      "UUID": "com.tacnet.radio.ptt",
+      "Name": "Push-To-Talk",
+      "Tooltip": "Hold to transmit, release to standby",
+      "Icon": "icon_ptt",
+      "States": [
+        {
+          "Image": "icon_ptt"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.status",
+      "Name": "Radio Status / RX Tracker",
+      "Tooltip": "Shows RX signal, active callsign and online status",
+      "Icon": "icon_radio_status",
+      "States": [
+        {
+          "Image": "icon_radio_status"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.channel",
+      "Name": "Channel Switcher / Preset",
+      "Tooltip": "Switch to next/prev channel or specific preset",
+      "Icon": "icon_channel",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$X1",
+        "triggerDescription": {
+          "rotate": "Cycle Channels",
+          "push": "Switch Mode",
+          "touch": "Select"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon_channel"
+        }
+      ],
+      "Settings": {
+        "channel": 1
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.radio.volume",
+      "Name": "Volume Control",
+      "Tooltip": "Adjust/mute volume or control dial",
+      "Icon": "icon_volume",
+      "Controllers": [
+        "Keypad",
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$A1",
+        "triggerDescription": {
+          "rotate": "Adjust Volume",
+          "push": "Mute/Unmute",
+          "touch": "Mute/Unmute"
+        }
+      },
+      "States": [
+        {
+          "Image": "icon_volume"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.volup",
+      "Name": "Volume Up",
+      "Tooltip": "Increase output volume by 10%",
+      "Icon": "icon_volup",
+      "States": [
+        {
+          "Image": "icon_volup"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.voldown",
+      "Name": "Volume Down",
+      "Tooltip": "Decrease output volume by 10%",
+      "Icon": "icon_voldown",
+      "States": [
+        {
+          "Image": "icon_voldown"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.vox",
+      "Name": "VOX Toggle",
+      "Tooltip": "Toggle VOX voice-activation",
+      "Icon": "icon_vox",
+      "States": [
+        {
+          "Image": "icon_vox"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.gps",
+      "Name": "GPS / MGRS Tracker",
+      "Tooltip": "Shows current MGRS coordinate",
+      "Icon": "icon_mgrs",
+      "States": [
+        {
+          "Image": "icon_mgrs"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.roster",
+      "Name": "Roster Tracker",
+      "Tooltip": "Shows operator roster count and switches to Roster tab",
+      "Icon": "icon_roster",
+      "States": [
+        {
+          "Image": "icon_roster"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.comsec",
+      "Name": "COMSEC Toggle",
+      "Tooltip": "Toggles encryption on the active channel",
+      "Icon": "icon_comsec",
+      "States": [
+        {
+          "Image": "icon_comsec"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.signal",
+      "Name": "Signal SNR Tracker",
+      "Tooltip": "Displays signal strength percentage",
+      "Icon": "icon_signal",
+      "States": [
+        {
+          "Image": "icon_signal"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.ew",
+      "Name": "EW Jamming Alert",
+      "Tooltip": "Displays jamming warning alerts",
+      "Icon": "icon_ew",
+      "States": [
+        {
+          "Image": "icon_ew"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.map",
+      "Name": "Map Tab Switcher",
+      "Tooltip": "Switches the client UI to the Map tab",
+      "Icon": "icon_map",
+      "States": [
+        {
+          "Image": "icon_map"
+        }
+      ]
+    },
+    {
+      "UUID": "com.tacnet.radio.member",
+      "Name": "Operator Key",
+      "Tooltip": "Track teammate status and distance",
+      "Icon": "icon_operator",
+      "States": [
+        {
+          "Image": "icon_operator"
+        }
+      ],
+      "Settings": {
+        "callsign": ""
+      },
+      "PropertyInspectorPath": "pi.html"
+    },
+    {
+      "UUID": "com.tacnet.radio.lcd",
+      "Name": "LCD Replica Key",
+      "Tooltip": "Simulates AN/PRC-152 LCD panel",
+      "Icon": "icon_lcd",
+      "States": [
+        {
+          "Image": "icon_lcd"
+        }
+      ],
+      "Settings": {
+        "lcd_theme": "classic"
+      },
+      "PropertyInspectorPath": "pi.html"
+    }
+  ],
+  "Profiles": [
+    {
+      "Name": "TacNet Grid",
+      "DeviceType": 0,
+      "Path": "profiles/TacNetGrid.streamdeckprofile",
+      "SelfInstall": true
+    },
+    {
+      "Name": "TacNet Grid XL",
+      "DeviceType": 2,
+      "Path": "profiles/TacNetGridXL.streamdeckprofile",
+      "SelfInstall": true
+    },
+    {
+      "Name": "TacNet Plus",
+      "DeviceType": 7,
+      "Path": "profiles/TacNetPlus.streamdeckprofile",
+      "SelfInstall": true
+    }
+  ],
+  "Category": "TacNet Tactical",
+  "CategoryIcon": "icon",
+  "Software": {
+    "MinimumVersion": "6.0"
+  }
+}

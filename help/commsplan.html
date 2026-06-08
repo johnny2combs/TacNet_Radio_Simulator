@@ -1,0 +1,47 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+    
+    .help-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+    .help-step-num { flex-shrink: 0; width: 24px; height: 24px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; margin-right: 12px; margin-top: 2px; }
+    
+    .help-code { font-family: 'JetBrains Mono', monospace; background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--text-primary); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Comms Plan Manager</h2>
+        <p>Global registry of authorized channels and callsigns (CEOI).</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. Channel Plan</summary>
+        <div class="content">Define the available radio nets for the exercise. Each channel requires a unique frequency and an optional encryption passphrase. Clients can only see and join channels that they are authorized for in the Callsign Register.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Callsign Register</summary>
+        <div class="content">Create accounts for every operator.<ul><li><strong>Callsign:</strong> Must exactly match what the operator types into their Launcher to connect.</li><li><strong>Unit / Role:</strong> Organizational metadata (e.g., 'Alpha Platoon Commander').</li><li><strong>Authorized Channels:</strong> A critical security feature. If a callsign does not have 'CH2' selected here, they cannot tune their client to CH2.</li></ul></div>
+    </details>
+    <details class="help-accordion" >
+        <summary>3. Importing / Exporting JSON</summary>
+        <div class="content">Building a CEOI for 50 players takes time. Use the <strong>Export JSON</strong> button to save your entire Comms Plan locally. For future exercises, simply <strong>Import JSON</strong> to restore all channels and callsigns instantly.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>4. COMSEC Security & Bypass Channels</summary>
+        <div class="content">TacNet supports mission-grade encryption and specialized wire intercoms:<ul><li><strong>COMSEC Keyfill:</strong> Encrypted channels require a valid passphrase. If an operator attempts to transmit without the correct keyfill, their audio is muted and replaced by an LFO digital screech.</li><li><strong>Emergency Zeroize:</strong> Clicking the red-bordered <code>ZEROIZE</code> button in settings immediately purges all keys globally from both client and server memory.</li><li><strong>Vehicle Intercom (CH99 VIC):</strong> A local intercom wire. Channels set to CH99 VIC completely bypass all terrain, foliage, GPS, and atmospheric physics, guaranteeing 100% signal clarity ($1.0$ signal) at any distance or environment.</li></ul></div>
+    </details>
+    <div class="help-alert"><strong>Note:</strong> Ensure the callsigns you create here exactly match the callsigns your users enter in the Launcher. It is case-sensitive.</div>
+</div>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TacNet AAR Playback Property Inspector</title>
+    <style>
+        body {
+            background-color: #2d2d2d;
+            color: #d8d8d8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 10px;
+        }
+        .sdpi-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sdpi-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .sdpi-item-label {
+            font-weight: bold;
+            width: 110px;
+            color: #a3a3a3;
+        }
+        .sdpi-item-value {
+            flex-grow: 1;
+        }
+        select, input {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+        .section-header {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            margin-bottom: 4px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 2px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .hint {
+            font-size: 9px;
+            color: #666;
+            margin-top: 2px;
+            padding-left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sdpi-wrapper">
+
+        <!-- Global Server Port -->
+        <div class="section-header">Server Connection</div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Server Port</div>
+            <div class="sdpi-item-value">
+                <input type="number" id="server_port" min="1" max="65535" value="8890" onchange="saveSettings()" />
+                <div class="hint">radio_web.py admin server port (default: 8890)</div>
+            </div>
+        </div>
+
+        <!-- Timeline scrub settings -->
+        <div id="section-timeline" class="hidden">
+            <div class="section-header">Timeline Scrub Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Scrub Step (sec)</div>
+                <div class="sdpi-item-value">
+                    <input type="number" id="scrub_step" min="1" max="60" value="5" onchange="saveSettings()" />
+                    <div class="hint">Seconds per dial tick (default: 5)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session loader settings -->
+        <div id="section-session" class="hidden">
+            <div class="section-header">Session Loader Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Session ID</div>
+                <div class="sdpi-item-value">
+                    <input type="text" id="session_id" value="" placeholder="Leave blank for latest" onchange="saveSettings()" />
+                    <div class="hint">Session folder name (e.g. 20240601_ALPHA). Leave blank to load most recent.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookmark marker settings -->
+        <div id="section-bookmark" class="hidden">
+            <div class="section-header">Bookmark Settings</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Marker Label</div>
+                <div class="sdpi-item-value">
+                    <input type="text" id="marker_label" value="HIGHLIGHT" placeholder="e.g. CONTACT, IED, MEDEVAC" onchange="saveSettings()" />
+                    <div class="hint">Label applied to this bookmark in the AAR report</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        var websocket = null;
+        var uuid = null;
+        var settings = {};
+        var actionUuid = "";
+
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            var actionInfo = JSON.parse(inActionInfo);
+            actionUuid = actionInfo.action;
+            settings = actionInfo.payload.settings || {};
+
+            // Defaults
+            if (settings.server_port  === undefined) settings.server_port  = 8890;
+            if (settings.scrub_step   === undefined) settings.scrub_step   = 5;
+            if (settings.session_id   === undefined) settings.session_id   = "";
+            if (settings.marker_label === undefined) settings.marker_label = "HIGHLIGHT";
+
+            // Populate
+            document.getElementById('server_port').value  = settings.server_port;
+            document.getElementById('scrub_step').value   = settings.scrub_step;
+            document.getElementById('session_id').value   = settings.session_id;
+            document.getElementById('marker_label').value = settings.marker_label;
+
+            showActionSections();
+
+            websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+            websocket.onopen = function () {
+                websocket.send(JSON.stringify({ "event": inRegisterEvent, "uuid": inUUID }));
+            };
+        }
+
+        function connectElgatoStreamDeck(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo);
+        }
+
+        function showActionSections() {
+            if (actionUuid === "com.tacnet.playback.timeline") {
+                document.getElementById('section-timeline').classList.remove('hidden');
+            } else if (actionUuid === "com.tacnet.playback.session") {
+                document.getElementById('section-session').classList.remove('hidden');
+            } else if (actionUuid === "com.tacnet.playback.bookmark") {
+                document.getElementById('section-bookmark').classList.remove('hidden');
+            }
+            // speed has no extra config
+        }
+
+        function saveSettings() {
+            settings.server_port  = parseInt(document.getElementById('server_port').value)  || 8890;
+            settings.scrub_step   = parseInt(document.getElementById('scrub_step').value)   || 5;
+            settings.session_id   = document.getElementById('session_id').value;
+            settings.marker_label = document.getElementById('marker_label').value || "HIGHLIGHT";
+
+            if (websocket) {
+                websocket.send(JSON.stringify({
+                    "event":   "setSettings",
+                    "context": uuid,
+                    "payload": settings
+                }));
+            }
+        }
+    </script>
+</body>
+</html>

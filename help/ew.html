@@ -1,0 +1,42 @@
+<style>
+    .help-article { font-family: 'Inter', system-ui, sans-serif; }
+    .help-header { border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; margin-bottom: 20px; }
+    .help-header h2 { margin: 0; color: var(--text-primary); font-size: 1.4rem; }
+    .help-header p { color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9rem; }
+    
+    .help-accordion { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: var(--bg-primary); }
+    .help-accordion summary { background: var(--bg-secondary); padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; transition: background 0.2s; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+    .help-accordion summary::-webkit-details-marker { display: none; }
+    .help-accordion summary::after { content: '+'; font-size: 1.2rem; color: var(--text-muted); }
+    .help-accordion[open] summary::after { content: '-'; }
+    .help-accordion summary:hover { background: var(--bg-tertiary); }
+    .help-accordion .content { padding: 16px; line-height: 1.6; font-size: 0.9rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); }
+    .help-accordion .content ul, .help-accordion .content ol { margin-top: 8px; margin-bottom: 8px; padding-left: 20px; }
+    
+    .help-alert { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--accent-amber); padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem; color: var(--text-primary); }
+    .help-alert strong { color: var(--accent-amber); }
+    
+    .help-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+    .help-step-num { flex-shrink: 0; width: 24px; height: 24px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; margin-right: 12px; margin-top: 2px; }
+    
+    .help-code { font-family: 'JetBrains Mono', monospace; background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--text-primary); }
+</style>
+<div class="help-article">
+    <div class="help-header">
+        <h2>Electronic Warfare (EW)</h2>
+        <p>Simulate a contested electromagnetic environment via jamming and EMI.</p>
+    </div>
+    
+    <details class="help-accordion" open>
+        <summary>1. Signal Degradation (EMI)</summary>
+        <div class="content">Injects background electromagnetic interference (static) onto specific channels. Operators will notice a higher noise floor, forcing them to speak louder or move closer to hear each other.</div>
+    </details>
+    <details class="help-accordion" >
+        <summary>2. Area Jamming</summary>
+        <div class="content">A brute-force attack on a frequency. Instead of just static, Area Jamming causes the server to actively drop audio packets. <ul><li>At <strong>0.5 Intensity</strong>, voices become choppy and robotic.</li><li>At <strong>1.0 Intensity</strong>, the channel is completely blacked out.</li></ul></div>
+    </details>
+    <details class="help-accordion" >
+        <summary>3. Targeted & EMCON</summary>
+        <div class="content">Surgical strikes against specific units.<ul><li><strong>Targeted Jamming:</strong> Hits specific callsigns only, simulating localized directional jammers.</li><li><strong>EMCON:</strong> (Emission Control) Completely disables a unit's ability to transmit. Simulates strict radio silence orders or catastrophic hardware destruction.</li></ul></div>
+    </details><div class="help-alert"><strong>Note:</strong> Use EW sparingly for maximum effect. Overuse can frustrate operators who aren't trained to switch to alternate channels under duress.</div>
+</div>
